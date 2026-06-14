@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NutriTrackPro - Login</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="logo">
+      <a href="index.html" class="brand-name">NutriTrackPro</a>
+    </div>
+  </nav>
+
+  <!-- AUTH BOX -->
+  <div class="auth-page">
+    <div class="auth-box">
+
+      <!-- TABS -->
+      <div class="auth-tabs">
+        <button id="tab-login" class="auth-tab active" onclick="showLogin()">Login</button>
+        <button id="tab-signup" class="auth-tab" onclick="showSignup()">Sign Up</button>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <div id="login-form">
+        <h2>Welcome Back</h2>
+        <p class="form-sub">Login to your NutriTrackPro account</p>
+
+        <label>Username</label>
+        <input type="text" id="login-username" placeholder="Enter your username" />
+
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="Enter your password" />
+
+        <p id="login-error" class="error-msg"></p>
+        <button class="btn-green full" onclick="login()">Login</button>
+      </div>
+
+      <!-- SIGNUP FORM -->
+      <div id="signup-form" style="display:none;">
+        <h2>Create Account</h2>
+        <p class="form-sub">Start tracking your nutrition today</p>
+
+        <label>Username</label>
+        <input type="text" id="signup-username" placeholder="Choose a username" />
+
+        <label>Email</label>
+        <input type="email" id="signup-email" placeholder="Enter your email" />
+
+        <label>Password</label>
+        <input type="password" id="signup-password" placeholder="Create a password" />
+
+        <p id="signup-error" class="error-msg"></p>
+        <button class="btn-green full" onclick="signup()">Create Account</button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // ── Check URL to decide which tab to show on load
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('mode') === 'signup') showSignup();
+
+    // ── Show login tab
+    function showLogin() {
+      document.getElementById('login-form').style.display = 'block';
+      document.getElementById('signup-form').style.display = 'none';
+      document.getElementById('tab-login').classList.add('active');
+      document.getElementById('tab-signup').classList.remove('active');
+    }
+
+    // ── Show signup tab
+    function showSignup() {
+      document.getElementById('signup-form').style.display = 'block';
+      document.getElementById('login-form').style.display = 'none';
+      document.getElementById('tab-signup').classList.add('active');
+      document.getElementById('tab-login').classList.remove('active');
+    }
+
+    // ── Signup — calls POST /signup on our backend
+    async function signup() {
+      const username = document.getElementById('signup-username').value.trim();
+      const email = document.getElementById('signup-email').value.trim();
+      const password = document.getElementById('signup-password').value;
+      const errorEl = document.getElementById('signup-error');
+
+      if (!username || !email || !password) {
+        errorEl.textContent = 'Please fill in all fields.';
+        return;
+      }
+
+      try {
+        const response = await fetch('http://127.0.0.1:8000/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, email, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          // After signup, go to login tab
+          showLogin();
+          document.getElementById('login-error').textContent = '';
+          alert('Account created! Please login.');
+        } else {
+          errorEl.textContent = data.detail || 'Signup failed.';
+        }
+      } catch (err) {
+        errorEl.textContent = 'Could not connect to server.';
+      }
+    }
+
+    // ── Login — calls POST /login, saves token, redirects to onboarding
+    async function login() {
+      const username = document.getElementById('login-username').value.trim();
+      const password = document.getElementById('login-password').value;
+      const errorEl = document.getElementById('login-error');
+
+      if (!username || !password) {
+        errorEl.textContent = 'Please fill in all fields.';
+        return;
+      }
+
+      try {
+        // Login requires form-encoded data, not JSON
+        const response = await fetch('http://127.0.0.1:8000/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          // Save token to localStorage so other pages can use it
+          localStorage.setItem('token', data.access_token);
+          localStorage.setItem('username', username);
+          // Redirect to onboarding
+          window.location.href = 'onboarding.html';
+        } else {
+          errorEl.textContent = data.detail || 'Wrong username or password.';
+        }
+      } catch (err) {
+        errorEl.textContent = 'Could not connect to server.';
+      }
+    }
+  </script>
+
+</body>
+</html>

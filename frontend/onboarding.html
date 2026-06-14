@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NutriTrackPro - Setup</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="logo">
+      <span class="brand-name">NutriTrackPro</span>
+    </div>
+    <div class="nav-links">
+      <span id="nav-username" style="font-weight:600; color:#1a1a1a;"></span>
+    </div>
+  </nav>
+
+  <!-- ONBOARDING CONTAINER -->
+  <div class="onboard-page">
+    <div class="onboard-box">
+
+      <!-- PROGRESS BAR -->
+      <div class="progress-bar">
+        <div class="progress-step active" id="step-dot-1"></div>
+        <div class="progress-line"></div>
+        <div class="progress-step" id="step-dot-2"></div>
+        <div class="progress-line"></div>
+        <div class="progress-step" id="step-dot-3"></div>
+      </div>
+
+      <!-- STEP 1: Personal Info -->
+      <div id="step-1">
+        <h2>Tell us about yourself</h2>
+        <p class="form-sub">This helps us calculate your personal calorie target</p>
+
+        <label>Your Name</label>
+        <input type="text" id="name" placeholder="Enter your name" />
+
+        <label>Age</label>
+        <input type="number" id="age" placeholder="Enter your age" />
+
+        <label>Height (cm)</label>
+        <input type="number" id="height" placeholder="e.g. 170" />
+
+        <label>Weight (kg)</label>
+        <input type="number" id="weight" placeholder="e.g. 65" />
+
+        <div class="onboard-actions">
+          <button class="btn-outline-sm" onclick="skipToStep(2)">Skip</button>
+          <button class="btn-green" onclick="goToStep(2)">Next</button>
+        </div>
+      </div>
+
+      <!-- STEP 2: Activity Level -->
+      <div id="step-2" style="display:none;">
+        <h2>How active are you?</h2>
+        <p class="form-sub">We use this to calculate how many calories you burn daily</p>
+
+        <div class="option-cards">
+          <div class="option-card" id="opt-frequently" onclick="selectActivity('frequently')">
+            <div class="option-title">Frequently</div>
+            <div class="option-desc">I exercise 4 or more times a week</div>
+          </div>
+          <div class="option-card" id="opt-sometimes" onclick="selectActivity('sometimes')">
+            <div class="option-title">Sometimes</div>
+            <div class="option-desc">I exercise 1 to 3 times a week</div>
+          </div>
+          <div class="option-card" id="opt-never" onclick="selectActivity('never')">
+            <div class="option-title">Rarely</div>
+            <div class="option-desc">I have a mostly sedentary lifestyle</div>
+          </div>
+        </div>
+
+        <div class="onboard-actions">
+          <button class="btn-outline-sm" onclick="skipToStep(3)">Skip</button>
+          <button class="btn-green" onclick="goToStep(3)">Next</button>
+        </div>
+      </div>
+
+      <!-- STEP 3: Goal -->
+      <div id="step-3" style="display:none;">
+        <h2>What is your goal?</h2>
+        <p class="form-sub">We will tailor your daily meal suggestions to match this</p>
+
+        <div class="option-cards">
+          <div class="option-card" id="opt-track" onclick="selectGoal('track_nutrition')">
+            <div class="option-title">Track Nutrition</div>
+            <div class="option-desc">I want to monitor what I eat and stay informed</div>
+          </div>
+          <div class="option-card" id="opt-improve" onclick="selectGoal('improve_health')">
+            <div class="option-title">Improve Health</div>
+            <div class="option-desc">I want to eat healthier and reach a calorie target</div>
+          </div>
+        </div>
+
+        <div class="onboard-actions">
+          <button class="btn-outline-sm" onclick="saveAndGo()">Skip</button>
+          <button class="btn-green" onclick="saveAndGo()">Finish Setup</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // Store onboarding data as user fills it in
+    const profile = {
+      name: null,
+      age: null,
+      height_cm: null,
+      weight_kg: null,
+      activity_level: null,
+      goal: null
+    };
+
+    // Show username in navbar
+    const username = localStorage.getItem('username');
+    if (!username) window.location.href = 'auth.html';
+    document.getElementById('nav-username').textContent = username;
+
+    // Move to next step and collect data
+    function goToStep(step) {
+      if (step === 2) {
+        // Collect step 1 data
+        profile.name = document.getElementById('name').value || null;
+        profile.age = parseInt(document.getElementById('age').value) || null;
+        profile.height_cm = parseFloat(document.getElementById('height').value) || null;
+        profile.weight_kg = parseFloat(document.getElementById('weight').value) || null;
+      }
+      showStep(step);
+    }
+
+    // Skip current step without collecting data
+    function skipToStep(step) {
+      showStep(step);
+    }
+
+    // Show the correct step and update progress dots
+    function showStep(step) {
+      document.getElementById('step-1').style.display = 'none';
+      document.getElementById('step-2').style.display = 'none';
+      document.getElementById('step-3').style.display = 'none';
+      document.getElementById('step-' + step).style.display = 'block';
+
+      // Update progress dots
+      for (let i = 1; i <= 3; i++) {
+        const dot = document.getElementById('step-dot-' + i);
+        dot.classList.toggle('active', i <= step);
+      }
+    }
+
+    // Select activity level option card
+    function selectActivity(level) {
+      document.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+      document.getElementById('opt-' + level).classList.add('selected');
+      profile.activity_level = level;
+    }
+
+    // Select goal option card
+    function selectGoal(goal) {
+      document.getElementById('opt-track').classList.remove('selected');
+      document.getElementById('opt-improve').classList.remove('selected');
+      if (goal === 'track_nutrition') document.getElementById('opt-track').classList.add('selected');
+      if (goal === 'improve_health') document.getElementById('opt-improve').classList.add('selected');
+      profile.goal = goal;
+    }
+
+    // Save profile to backend then go to dashboard
+    async function saveAndGo() {
+      const token = localStorage.getItem('token');
+
+      try {
+        await fetch('http://127.0.0.1:8000/profile', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify(profile)
+        });
+      } catch (err) {
+        console.log('Profile save failed, continuing anyway.');
+      }
+
+      // Go to dashboard regardless
+      window.location.href = 'dashboard.html';
+    }
+  </script>
+
+</body>
+</html>

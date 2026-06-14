@@ -1,0 +1,788 @@
+/*
+  NutriTrackPro Stylesheet
+  Theme: Yellow (#F5C842), Red (#E63946), Green (#2DC653), White (#FFFFFF)
+  Font: Inter for body, italic bold for brand name
+*/
+
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', Arial, sans-serif;
+  background-color: #F5C842;
+  color: #1a1a1a;
+  min-height: 100vh;
+  border: 6px solid #E63946;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* NAVBAR */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 48px;
+  background: #F5C842;
+  border-bottom: 4px solid #E63946;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-name {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  font-weight: 700;
+  font-size: 26px;
+  color: #1a4fd6;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.nav-login {
+  font-weight: 600;
+  font-size: 15px;
+  color: #1a1a1a;
+}
+
+.nav-login:hover {
+  color: #E63946;
+}
+
+/* BUTTONS */
+.btn-green {
+  background: #2DC653;
+  color: white;
+  padding: 10px 26px;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.btn-green:hover {
+  background: #22a845;
+}
+
+.btn-green.large {
+  padding: 14px 40px;
+  font-size: 16px;
+}
+
+.btn-outline {
+  background: white;
+  color: #E63946;
+  padding: 10px 26px;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 14px;
+  border: 2px solid #E63946;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.btn-outline:hover {
+  background: #ffeaea;
+}
+
+.btn-outline.large {
+  padding: 14px 40px;
+  font-size: 16px;
+}
+
+/* HERO */
+.hero {
+  padding: 60px 48px 80px;
+}
+
+.hero-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.hero-title {
+  font-size: 52px;
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: 20px;
+  color: #1a1a1a;
+}
+
+.hero-sub {
+  font-size: 17px;
+  color: #333;
+  line-height: 1.7;
+  margin-bottom: 40px;
+}
+
+.hero-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 72px;
+  flex-wrap: wrap;
+}
+
+/* FEATURE CARDS */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.card {
+  background: white;
+  border: 3px solid #E63946;
+  border-radius: 20px;
+  padding: 32px 20px;
+  text-align: center;
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}
+
+.card-title {
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #E63946;
+}
+
+.card-body {
+  font-size: 14px;
+  color: #444;
+  line-height: 1.6;
+}
+
+/* FOOTER */
+footer {
+  text-align: center;
+  padding: 20px;
+  background: #1a1a1a;
+  color: #aaa;
+  font-size: 13px;
+}
+/* AUTH PAGE */
+.auth-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 80px);
+  padding: 40px 20px;
+}
+
+.auth-box {
+  background: white;
+  border: 3px solid #E63946;
+  border-radius: 20px;
+  padding: 40px;
+  width: 100%;
+  max-width: 440px;
+}
+
+.auth-tabs {
+  display: flex;
+  margin-bottom: 28px;
+  border-radius: 50px;
+  overflow: hidden;
+  border: 2px solid #E63946;
+}
+
+.auth-tab {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: white;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  color: #E63946;
+}
+
+.auth-tab.active {
+  background: #E63946;
+  color: white;
+}
+
+.auth-box h2 {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: #1a1a1a;
+}
+
+.form-sub {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+.auth-box label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #333;
+}
+
+.auth-box input {
+  width: 100%;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  outline: none;
+}
+
+.auth-box input:focus {
+  border-color: #F5C842;
+}
+
+.btn-green.full {
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+  border-radius: 10px;
+  margin-top: 4px;
+}
+
+.error-msg {
+  color: #E63946;
+  font-size: 13px;
+  margin-bottom: 8px;
+  min-height: 18px;
+}
+/* ONBOARDING PAGE */
+.onboard-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 80px);
+  padding: 40px 20px;
+}
+
+.onboard-box {
+  background: white;
+  border: 3px solid #E63946;
+  border-radius: 20px;
+  padding: 44px;
+  width: 100%;
+  max-width: 520px;
+}
+
+.onboard-box h2 {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+/* PROGRESS DOTS */
+.progress-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 36px;
+  gap: 0;
+}
+
+.progress-step {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ddd;
+  border: 2px solid #ddd;
+}
+
+.progress-step.active {
+  background: #E63946;
+  border-color: #E63946;
+}
+
+.progress-line {
+  flex: 1;
+  height: 2px;
+  background: #ddd;
+  max-width: 80px;
+}
+
+/* OPTION CARDS (activity + goal) */
+.option-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 20px 0 28px;
+}
+
+.option-card {
+  border: 2px solid #ddd;
+  border-radius: 12px;
+  padding: 16px 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.option-card:hover {
+  border-color: #F5C842;
+  background: #fffdf0;
+}
+
+.option-card.selected {
+  border-color: #E63946;
+  background: #fff5f5;
+}
+
+.option-title {
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 4px;
+  color: #1a1a1a;
+}
+
+.option-desc {
+  font-size: 13px;
+  color: #666;
+}
+
+/* ONBOARDING ACTIONS */
+.onboard-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.btn-outline-sm {
+  background: white;
+  color: #888;
+  border: 2px solid #ddd;
+  padding: 10px 24px;
+  border-radius: 50px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-outline-sm:hover {
+  border-color: #E63946;
+  color: #E63946;
+}
+
+/* Onboarding inputs reuse auth styles */
+.onboard-box label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #333;
+}
+
+.onboard-box input {
+  width: 100%;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  outline: none;
+}
+
+.onboard-box input:focus {
+  border-color: #F5C842;
+}
+/* DASHBOARD WRAPPER */
+.dash-wrapper {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 24px 32px 48px;
+}
+
+/* SUMMARY BAR */
+.summary-bar {
+  background: white;
+  border: 2px solid #E63946;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 20px 32px;
+  margin-bottom: 12px;
+}
+
+.summary-item {
+  text-align: center;
+}
+
+.summary-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #E63946;
+  margin-bottom: 4px;
+}
+
+.summary-val {
+  font-size: 28px;
+  font-weight: 800;
+  color: #1a1a1a;
+  line-height: 1;
+}
+
+.summary-unit {
+  font-size: 11px;
+  color: #888;
+  margin-top: 4px;
+}
+
+.summary-divider {
+  width: 1px;
+  height: 48px;
+  background: #eee;
+}
+
+.water-btn {
+  background: #2DC653;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* CALORIE PROGRESS BAR */
+.cal-progress-wrap {
+  background: #eee;
+  border-radius: 50px;
+  height: 8px;
+  margin-bottom: 28px;
+  overflow: hidden;
+}
+
+.cal-progress-fill {
+  height: 100%;
+  border-radius: 50px;
+  background: #2DC653;
+  width: 0%;
+  transition: width 0.5s ease;
+}
+
+/* MAIN GRID */
+.dash-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 24px;
+  align-items: start;
+}
+
+/* SECTION TITLE */
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 16px;
+  padding-left: 12px;
+  border-left: 4px solid #E63946;
+}
+
+/* MEAL CARDS */
+.meals-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.meal-card {
+  background: white;
+  border-radius: 16px;
+  border: 1.5px solid #eee;
+  overflow: hidden;
+}
+
+.meal-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.meal-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.meal-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #fde8ea;
+  color: #E63946;
+  font-weight: 800;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.meal-title {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.meal-subtitle {
+  font-size: 12px;
+  color: #888;
+  margin-top: 2px;
+}
+
+.meal-total {
+  font-weight: 700;
+  font-size: 15px;
+  color: #E63946;
+}
+
+/* LOGGED ITEMS */
+.meal-logged {
+  padding: 0 20px;
+}
+
+.log-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f5f5f5;
+  font-size: 13px;
+}
+
+.log-name {
+  flex: 1;
+  font-weight: 600;
+}
+
+.log-macros {
+  color: #888;
+  font-size: 12px;
+}
+
+.log-kcal {
+  font-weight: 700;
+  color: #E63946;
+  white-space: nowrap;
+}
+
+/* ADD MEAL SECTION */
+.meal-add {
+  padding: 16px 20px;
+  background: #fafafa;
+}
+
+.add-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.add-tab {
+  padding: 6px 16px;
+  border-radius: 20px;
+  border: 1.5px solid #ddd;
+  background: white;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #666;
+}
+
+.add-tab.active {
+  background: #F5C842;
+  border-color: #F5C842;
+  color: #1a1a1a;
+}
+
+.meal-add input[type="text"],
+.meal-add input[type="number"] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid #eee;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  margin-bottom: 8px;
+  outline: none;
+  background: white;
+}
+
+.meal-add input:focus {
+  border-color: #F5C842;
+}
+
+.macro-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.macro-inputs input {
+  margin-bottom: 0;
+}
+
+.log-btn {
+  width: 100%;
+  padding: 10px;
+  background: #2DC653;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.log-btn:hover {
+  background: #22a845;
+}
+
+/* UPLOAD BOX */
+.upload-box {
+  border: 2px dashed #F5C842;
+  border-radius: 10px;
+  cursor: pointer;
+  overflow: hidden;
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.upload-placeholder {
+  color: #aaa;
+  font-size: 13px;
+  text-align: center;
+  padding: 24px;
+}
+
+/* SUGGESTION BOX */
+.suggestion-box {
+  margin-top: 10px;
+  background: #fff5f5;
+  border-left: 3px solid #E63946;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #E63946;
+}
+
+/* STATS PANEL */
+.stats-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: sticky;
+  top: 20px;
+}
+
+.stats-card {
+  background: white;
+  border-radius: 16px;
+  border: 1.5px solid #eee;
+  padding: 20px;
+}
+
+.stats-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #1a1a1a;
+}
+
+/* MACRO BARS */
+.macro-stat {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.macro-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #555;
+  width: 48px;
+}
+
+.macro-bar-wrap {
+  flex: 1;
+  background: #f0f0f0;
+  border-radius: 50px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.macro-bar {
+  height: 100%;
+  border-radius: 50px;
+  width: 0%;
+  transition: width 0.4s;
+}
+
+.protein-bar { background: #E63946; }
+.carbs-bar   { background: #F5C842; }
+.fats-bar    { background: #2DC653; }
+
+.macro-grams {
+  font-size: 12px;
+  font-weight: 700;
+  width: 32px;
+  text-align: right;
+}
+
+/* WEEKLY ROWS */
+.weekly-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #f5f5f5;
+  font-size: 13px;
+}
+
+.weekly-row:last-child {
+  border-bottom: none;
+}
+
+.weekly-label {
+  color: #666;
+}
+
+.weekly-val {
+  font-weight: 700;
+  color: #1a1a1a;
+}

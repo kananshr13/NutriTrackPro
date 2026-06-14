@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NutriTrackPro - Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="logo">
+      <span class="brand-name">NutriTrackPro</span>
+    </div>
+    <div class="nav-links">
+      <span id="nav-username"></span>
+      <button class="btn-outline-sm" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <!-- PAGE WRAPPER -->
+  <div class="dash-wrapper">
+
+    <!-- TOP SUMMARY BAR -->
+    <div class="summary-bar">
+
+      <div class="summary-item">
+        <div class="summary-label">Calorie Goal</div>
+        <div class="summary-val" id="calorie-target">--</div>
+        <div class="summary-unit">kcal / day</div>
+      </div>
+
+      <div class="summary-divider"></div>
+
+      <div class="summary-item">
+        <div class="summary-label">Consumed</div>
+        <div class="summary-val" id="calories-consumed">0</div>
+        <div class="summary-unit">kcal today</div>
+      </div>
+
+      <div class="summary-divider"></div>
+
+      <div class="summary-item">
+        <div class="summary-label">Remaining</div>
+        <div class="summary-val" id="calories-remaining">--</div>
+        <div class="summary-unit">kcal left</div>
+      </div>
+
+      <div class="summary-divider"></div>
+
+      <div class="summary-item">
+        <div class="summary-label">BMI</div>
+        <div class="summary-val" id="bmi-value">--</div>
+        <div class="summary-unit" id="bmi-label"></div>
+      </div>
+
+      <div class="summary-divider"></div>
+
+      <div class="summary-item">
+        <div class="summary-label">Water</div>
+        <div class="summary-val"><span id="water-count">0</span>/8</div>
+        <div class="summary-unit">
+          <button class="water-btn" onclick="addWater()">+ Glass</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- CALORIE PROGRESS BAR -->
+    <div class="cal-progress-wrap">
+      <div class="cal-progress-fill" id="calorie-bar"></div>
+    </div>
+
+    <!-- MAIN GRID -->
+    <div class="dash-grid">
+
+      <!-- LEFT: MEAL CARDS -->
+      <div class="meals-section">
+        <div class="section-title">Today's Meals</div>
+
+        <!-- MEAL CARD TEMPLATE — repeated 4 times -->
+        <!-- BREAKFAST -->
+        <div class="meal-card">
+          <div class="meal-top">
+            <div class="meal-left">
+              <div class="meal-icon">B</div>
+              <div>
+                <div class="meal-title">Breakfast</div>
+                <div class="meal-subtitle">Recommended: 400–600 kcal</div>
+              </div>
+            </div>
+            <div class="meal-total" id="cal-breakfast">0 kcal</div>
+          </div>
+
+          <div class="meal-logged" id="logs-breakfast"></div>
+
+          <div class="meal-add">
+            <div class="add-tabs">
+              <button class="add-tab active" onclick="switchTab('breakfast','manual')">Type Manually</button>
+              <button class="add-tab" onclick="switchTab('breakfast','upload')">Upload Photo</button>
+            </div>
+
+            <div id="manual-breakfast">
+              <input type="text" id="food-breakfast" placeholder="e.g. Oats with milk" />
+              <div class="macro-inputs">
+                <input type="number" id="cal-input-breakfast" placeholder="Calories" />
+                <input type="number" id="protein-breakfast" placeholder="Protein (g)" />
+                <input type="number" id="carbs-breakfast" placeholder="Carbs (g)" />
+                <input type="number" id="fats-breakfast" placeholder="Fats (g)" />
+              </div>
+              <button class="log-btn" onclick="logMeal('breakfast')">Log Breakfast</button>
+            </div>
+
+            <div id="upload-breakfast" style="display:none;">
+              <div class="upload-box" onclick="document.getElementById('img-breakfast').click()">
+                <input type="file" id="img-breakfast" accept="image/*" style="display:none;" onchange="previewImage('breakfast')" />
+                <div id="preview-breakfast" class="upload-placeholder">
+                  Click to upload food photo
+                </div>
+              </div>
+              <input type="text" id="food-upload-breakfast" placeholder="Food name (optional)" style="margin-top:8px;" />
+              <button class="log-btn" onclick="logMealFromUpload('breakfast')">Analyse and Log</button>
+            </div>
+
+            <div id="suggestion-breakfast" class="suggestion-box" style="display:none;"></div>
+          </div>
+        </div>
+
+        <!-- LUNCH -->
+        <div class="meal-card">
+          <div class="meal-top">
+            <div class="meal-left">
+              <div class="meal-icon" style="background:#fff3cd; color:#e67e00;">L</div>
+              <div>
+                <div class="meal-title">Lunch</div>
+                <div class="meal-subtitle">Recommended: 500–700 kcal</div>
+              </div>
+            </div>
+            <div class="meal-total" id="cal-lunch">0 kcal</div>
+          </div>
+
+          <div class="meal-logged" id="logs-lunch"></div>
+
+          <div class="meal-add">
+            <div class="add-tabs">
+              <button class="add-tab active" onclick="switchTab('lunch','manual')">Type Manually</button>
+              <button class="add-tab" onclick="switchTab('lunch','upload')">Upload Photo</button>
+            </div>
+
+            <div id="manual-lunch">
+              <input type="text" id="food-lunch" placeholder="e.g. Dal rice with sabzi" />
+              <div class="macro-inputs">
+                <input type="number" id="cal-input-lunch" placeholder="Calories" />
+                <input type="number" id="protein-lunch" placeholder="Protein (g)" />
+                <input type="number" id="carbs-lunch" placeholder="Carbs (g)" />
+                <input type="number" id="fats-lunch" placeholder="Fats (g)" />
+              </div>
+              <button class="log-btn" onclick="logMeal('lunch')">Log Lunch</button>
+            </div>
+
+            <div id="upload-lunch" style="display:none;">
+              <div class="upload-box" onclick="document.getElementById('img-lunch').click()">
+                <input type="file" id="img-lunch" accept="image/*" style="display:none;" onchange="previewImage('lunch')" />
+                <div id="preview-lunch" class="upload-placeholder">Click to upload food photo</div>
+              </div>
+              <input type="text" id="food-upload-lunch" placeholder="Food name (optional)" style="margin-top:8px;" />
+              <button class="log-btn" onclick="logMealFromUpload('lunch')">Analyse and Log</button>
+            </div>
+
+            <div id="suggestion-lunch" class="suggestion-box" style="display:none;"></div>
+          </div>
+        </div>
+
+        <!-- SNACKS -->
+        <div class="meal-card">
+          <div class="meal-top">
+            <div class="meal-left">
+              <div class="meal-icon" style="background:#d4edda; color:#1a7a3a;">S</div>
+              <div>
+                <div class="meal-title">Snacks</div>
+                <div class="meal-subtitle">Recommended: 100–300 kcal</div>
+              </div>
+            </div>
+            <div class="meal-total" id="cal-snacks">0 kcal</div>
+          </div>
+
+          <div class="meal-logged" id="logs-snacks"></div>
+
+          <div class="meal-add">
+            <div class="add-tabs">
+              <button class="add-tab active" onclick="switchTab('snacks','manual')">Type Manually</button>
+              <button class="add-tab" onclick="switchTab('snacks','upload')">Upload Photo</button>
+            </div>
+
+            <div id="manual-snacks">
+              <input type="text" id="food-snacks" placeholder="e.g. Banana, nuts" />
+              <div class="macro-inputs">
+                <input type="number" id="cal-input-snacks" placeholder="Calories" />
+                <input type="number" id="protein-snacks" placeholder="Protein (g)" />
+                <input type="number" id="carbs-snacks" placeholder="Carbs (g)" />
+                <input type="number" id="fats-snacks" placeholder="Fats (g)" />
+              </div>
+              <button class="log-btn" onclick="logMeal('snacks')">Log Snacks</button>
+            </div>
+
+            <div id="upload-snacks" style="display:none;">
+              <div class="upload-box" onclick="document.getElementById('img-snacks').click()">
+                <input type="file" id="img-snacks" accept="image/*" style="display:none;" onchange="previewImage('snacks')" />
+                <div id="preview-snacks" class="upload-placeholder">Click to upload food photo</div>
+              </div>
+              <input type="text" id="food-upload-snacks" placeholder="Food name (optional)" style="margin-top:8px;" />
+              <button class="log-btn" onclick="logMealFromUpload('snacks')">Analyse and Log</button>
+            </div>
+
+            <div id="suggestion-snacks" class="suggestion-box" style="display:none;"></div>
+          </div>
+        </div>
+
+        <!-- DINNER -->
+        <div class="meal-card">
+          <div class="meal-top">
+            <div class="meal-left">
+              <div class="meal-icon" style="background:#e8d5f5; color:#6a1b9a;">D</div>
+              <div>
+                <div class="meal-title">Dinner</div>
+                <div class="meal-subtitle">Recommended: 400–600 kcal</div>
+              </div>
+            </div>
+            <div class="meal-total" id="cal-dinner">0 kcal</div>
+          </div>
+
+          <div class="meal-logged" id="logs-dinner"></div>
+
+          <div class="meal-add">
+            <div class="add-tabs">
+              <button class="add-tab active" onclick="switchTab('dinner','manual')">Type Manually</button>
+              <button class="add-tab" onclick="switchTab('dinner','upload')">Upload Photo</button>
+            </div>
+
+            <div id="manual-dinner">
+              <input type="text" id="food-dinner" placeholder="e.g. Grilled chicken with rice" />
+              <div class="macro-inputs">
+                <input type="number" id="cal-input-dinner" placeholder="Calories" />
+                <input type="number" id="protein-dinner" placeholder="Protein (g)" />
+                <input type="number" id="carbs-dinner" placeholder="Carbs (g)" />
+                <input type="number" id="fats-dinner" placeholder="Fats (g)" />
+              </div>
+              <button class="log-btn" onclick="logMeal('dinner')">Log Dinner</button>
+            </div>
+
+            <div id="upload-dinner" style="display:none;">
+              <div class="upload-box" onclick="document.getElementById('img-dinner').click()">
+                <input type="file" id="img-dinner" accept="image/*" style="display:none;" onchange="previewImage('dinner')" />
+                <div id="preview-dinner" class="upload-placeholder">Click to upload food photo</div>
+              </div>
+              <input type="text" id="food-upload-dinner" placeholder="Food name (optional)" style="margin-top:8px;" />
+              <button class="log-btn" onclick="logMealFromUpload('dinner')">Analyse and Log</button>
+            </div>
+
+            <div id="suggestion-dinner" class="suggestion-box" style="display:none;"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: STATS PANEL -->
+      <div class="stats-section">
+
+        <!-- MACROS TODAY -->
+        <div class="stats-card">
+          <div class="stats-title">Today's Macros</div>
+          <div class="macro-stat">
+            <div class="macro-name">Protein</div>
+            <div class="macro-bar-wrap">
+              <div class="macro-bar protein-bar" id="bar-protein"></div>
+            </div>
+            <div class="macro-grams" id="g-protein">0g</div>
+          </div>
+          <div class="macro-stat">
+            <div class="macro-name">Carbs</div>
+            <div class="macro-bar-wrap">
+              <div class="macro-bar carbs-bar" id="bar-carbs"></div>
+            </div>
+            <div class="macro-grams" id="g-carbs">0g</div>
+          </div>
+          <div class="macro-stat">
+            <div class="macro-name">Fats</div>
+            <div class="macro-bar-wrap">
+              <div class="macro-bar fats-bar" id="bar-fats"></div>
+            </div>
+            <div class="macro-grams" id="g-fats">0g</div>
+          </div>
+        </div>
+
+        <!-- WEEKLY SUMMARY -->
+        <div class="stats-card">
+          <div class="stats-title">Weekly Summary</div>
+          <div class="weekly-row">
+            <span class="weekly-label">Total Calories</span>
+            <span class="weekly-val" id="w-calories">--</span>
+          </div>
+          <div class="weekly-row">
+            <span class="weekly-label">Avg per Day</span>
+            <span class="weekly-val" id="w-avg">--</span>
+          </div>
+          <div class="weekly-row">
+            <span class="weekly-label">Total Protein</span>
+            <span class="weekly-val" id="w-protein">--</span>
+          </div>
+          <div class="weekly-row">
+            <span class="weekly-label">Total Carbs</span>
+            <span class="weekly-val" id="w-carbs">--</span>
+          </div>
+          <div class="weekly-row">
+            <span class="weekly-label">Total Fats</span>
+            <span class="weekly-val" id="w-fats">--</span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const API = 'http://127.0.0.1:8000';
+    const token = localStorage.getItem('token');
+    const username = localStorage.getItem('username');
+    if (!token) window.location.href = 'auth.html';
+
+    document.getElementById('nav-username').textContent = username;
+
+    let waterCount = 0;
+    let calorieTarget = 2000;
+    let totalProtein = 0, totalCarbs = 0, totalFats = 0;
+
+    window.onload = function () {
+      loadProfile();
+      loadTodayMeals();
+      loadWeeklySummary();
+    };
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = 'index.html';
+    }
+
+    function addWater() {
+      if (waterCount < 8) {
+        waterCount++;
+        document.getElementById('water-count').textContent = waterCount;
+      }
+    }
+
+    // Switch between manual and upload tabs in a meal card
+    function switchTab(meal, mode) {
+      const manual = document.getElementById('manual-' + meal);
+      const upload = document.getElementById('upload-' + meal);
+      const tabs = manual.closest('.meal-add').querySelectorAll('.add-tab');
+
+      if (mode === 'manual') {
+        manual.style.display = 'block';
+        upload.style.display = 'none';
+        tabs[0].classList.add('active');
+        tabs[1].classList.remove('active');
+      } else {
+        manual.style.display = 'none';
+        upload.style.display = 'block';
+        tabs[0].classList.remove('active');
+        tabs[1].classList.add('active');
+      }
+    }
+
+    // Preview uploaded image
+    function previewImage(meal) {
+      const file = document.getElementById('img-' + meal).files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById('preview-' + meal).innerHTML =
+          `<img src="${e.target.result}" style="width:100%;height:140px;object-fit:cover;border-radius:8px;" />`;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Log meal from upload (sends image to backend)
+    async function logMealFromUpload(meal) {
+      const fileInput = document.getElementById('img-' + meal);
+      const foodName = document.getElementById('food-upload-' + meal).value || 'Uploaded meal';
+
+      if (!fileInput.files[0]) {
+        alert('Please upload an image first.');
+        return;
+      }
+
+      // For now log with placeholder values — ML model will fill this later
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+
+      try {
+        await fetch(API + '/predict', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token },
+          body: formData
+        });
+
+        // Log with placeholder values until ML model is connected
+        await fetch(API + '/log_meal', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({
+            meal_type: meal,
+            food_name: foodName,
+            calories: 0,
+            protein: 0,
+            carbs: 0,
+            fats: 0
+          })
+        });
+
+        alert('Image uploaded! Once ML model is connected, calories will be auto-filled.');
+        loadTodayMeals();
+      } catch (err) {
+        alert('Could not upload. Is the server running?');
+      }
+    }
+
+    // Load profile
+    async function loadProfile() {
+      try {
+        const res = await fetch(API + '/profile', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const data = await res.json();
+
+        if (data && data.daily_calorie_target) {
+          calorieTarget = data.daily_calorie_target;
+          document.getElementById('calorie-target').textContent = calorieTarget;
+          document.getElementById('calories-remaining').textContent = calorieTarget;
+        }
+
+        if (data && data.height_cm && data.weight_kg) {
+          const h = data.height_cm / 100;
+          const bmi = (data.weight_kg / (h * h)).toFixed(1);
+          document.getElementById('bmi-value').textContent = bmi;
+          document.getElementById('bmi-label').textContent =
+            bmi < 18.5 ? 'Underweight' : bmi < 25 ? 'Healthy' : bmi < 30 ? 'Overweight' : 'Obese';
+        }
+      } catch (err) {
+        document.getElementById('calorie-target').textContent = '2000';
+      }
+    }
+
+    // Log a meal manually
+    async function logMeal(meal) {
+      const foodName = document.getElementById('food-' + meal).value.trim();
+      const calories = parseFloat(document.getElementById('cal-input-' + meal).value) || 0;
+      const protein = parseFloat(document.getElementById('protein-' + meal).value) || 0;
+      const carbs = parseFloat(document.getElementById('carbs-' + meal).value) || 0;
+      const fats = parseFloat(document.getElementById('fats-' + meal).value) || 0;
+
+      if (!foodName || !calories) {
+        alert('Please enter food name and calories.');
+        return;
+      }
+
+      try {
+        const res = await fetch(API + '/log_meal', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({ meal_type: meal, food_name: foodName, calories, protein, carbs, fats })
+        });
+
+        const data = await res.json();
+
+        // Clear inputs
+        ['food-', 'cal-input-', 'protein-', 'carbs-', 'fats-'].forEach(prefix => {
+          document.getElementById(prefix + meal).value = '';
+        });
+
+        // Show suggestion if meal is unhealthy
+        if (data.is_healthy === 'no' && data.alternative) {
+          const box = document.getElementById('suggestion-' + meal);
+          box.style.display = 'block';
+          box.textContent = 'Suggestion: ' + data.alternative;
+        }
+
+        loadTodayMeals();
+      } catch (err) {
+        alert('Could not log meal. Is the server running?');
+      }
+    }
+
+    // Load today's meals
+    async function loadTodayMeals() {
+      try {
+        const res = await fetch(API + '/today_meals', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const data = await res.json();
+
+        let totalCal = 0;
+        totalProtein = 0; totalCarbs = 0; totalFats = 0;
+
+        ['breakfast', 'lunch', 'snacks', 'dinner'].forEach(type => {
+          const logs = data.meals[type] || [];
+          const container = document.getElementById('logs-' + type);
+          let typeCal = 0;
+          container.innerHTML = '';
+
+          logs.forEach(log => {
+            typeCal += log.calories;
+            totalProtein += log.protein;
+            totalCarbs += log.carbs;
+            totalFats += log.fats;
+
+            const el = document.createElement('div');
+            el.className = 'log-row';
+            el.innerHTML = `
+              <span class="log-name">${log.food_name}</span>
+              <span class="log-macros">${log.protein}g P · ${log.carbs}g C · ${log.fats}g F</span>
+              <span class="log-kcal">${log.calories} kcal</span>
+            `;
+            container.appendChild(el);
+          });
+
+          document.getElementById('cal-' + type).textContent = typeCal + ' kcal';
+          totalCal += typeCal;
+        });
+
+        // Update summary bar
+        document.getElementById('calories-consumed').textContent = totalCal;
+        const remaining = calorieTarget - totalCal;
+        document.getElementById('calories-remaining').textContent = remaining > 0 ? remaining : 0;
+
+        // Update calorie progress bar
+        const pct = Math.min((totalCal / calorieTarget) * 100, 100);
+        const bar = document.getElementById('calorie-bar');
+        bar.style.width = pct + '%';
+        bar.style.background = pct > 90 ? '#E63946' : '#2DC653';
+
+        // Update macro bars
+        updateMacroBars();
+      } catch (err) {
+        console.log('Could not load meals.');
+      }
+    }
+
+    // Update macro progress bars
+    function updateMacroBars() {
+      document.getElementById('g-protein').textContent = Math.round(totalProtein) + 'g';
+      document.getElementById('g-carbs').textContent = Math.round(totalCarbs) + 'g';
+      document.getElementById('g-fats').textContent = Math.round(totalFats) + 'g';
+
+      const proteinPct = Math.min((totalProtein / 50) * 100, 100);
+      const carbsPct = Math.min((totalCarbs / 250) * 100, 100);
+      const fatsPct = Math.min((totalFats / 65) * 100, 100);
+
+      document.getElementById('bar-protein').style.width = proteinPct + '%';
+      document.getElementById('bar-carbs').style.width = carbsPct + '%';
+      document.getElementById('bar-fats').style.width = fatsPct + '%';
+    }
+
+    // Load weekly summary
+    async function loadWeeklySummary() {
+      try {
+        const res = await fetch(API + '/weekly_summary', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const data = await res.json();
+        const t = data.weekly_totals;
+
+        document.getElementById('w-calories').textContent = Math.round(t.calories) + ' kcal';
+        document.getElementById('w-avg').textContent = Math.round(t.calories / 7) + ' kcal';
+        document.getElementById('w-protein').textContent = Math.round(t.protein) + 'g';
+        document.getElementById('w-carbs').textContent = Math.round(t.carbs) + 'g';
+        document.getElementById('w-fats').textContent = Math.round(t.fats) + 'g';
+      } catch (err) {
+        console.log('Could not load weekly summary.');
+      }
+    }
+  </script>
+
+</body>
+</html>

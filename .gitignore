@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+.env
+
+# Database
+*.db
+
+# ML model (too large for GitHub)
+*.h5
+
+# Mac
+.DS_Store
