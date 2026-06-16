@@ -9,21 +9,18 @@
 </head>
 <body>
 
-  <!-- NAVBAR -->
   <nav class="navbar">
     <div class="logo">
       <span class="brand-name">NutriTrackPro</span>
     </div>
     <div class="nav-links">
-      <span id="nav-username" style="font-weight:600; color:#1a1a1a;"></span>
+      <span id="nav-username" style="font-weight:600;"></span>
     </div>
   </nav>
 
-  <!-- ONBOARDING CONTAINER -->
   <div class="onboard-page">
     <div class="onboard-box">
 
-      <!-- PROGRESS BAR -->
       <div class="progress-bar">
         <div class="progress-step active" id="step-dot-1"></div>
         <div class="progress-line"></div>
@@ -32,13 +29,19 @@
         <div class="progress-step" id="step-dot-3"></div>
       </div>
 
-      <!-- STEP 1: Personal Info -->
+      <!-- STEP 1 -->
       <div id="step-1">
         <h2>Tell us about yourself</h2>
         <p class="form-sub">This helps us calculate your personal calorie target</p>
 
         <label>Your Name</label>
         <input type="text" id="name" placeholder="Enter your name" />
+
+        <label>Gender</label>
+        <div class="gender-row">
+          <button class="gender-btn active" id="btn-male" onclick="selectGender('male')">Male</button>
+          <button class="gender-btn" id="btn-female" onclick="selectGender('female')">Female</button>
+        </div>
 
         <label>Age</label>
         <input type="number" id="age" placeholder="Enter your age" />
@@ -55,7 +58,7 @@
         </div>
       </div>
 
-      <!-- STEP 2: Activity Level -->
+      <!-- STEP 2 -->
       <div id="step-2" style="display:none;">
         <h2>How active are you?</h2>
         <p class="form-sub">We use this to calculate how many calories you burn daily</p>
@@ -81,7 +84,7 @@
         </div>
       </div>
 
-      <!-- STEP 3: Goal -->
+      <!-- STEP 3 -->
       <div id="step-3" style="display:none;">
         <h2>What is your goal?</h2>
         <p class="form-sub">We will tailor your daily meal suggestions to match this</p>
@@ -107,26 +110,26 @@
   </div>
 
   <script>
-    // Store onboarding data as user fills it in
     const profile = {
-      name: null,
-      age: null,
-      height_cm: null,
-      weight_kg: null,
-      activity_level: null,
-      goal: null
+      name: null, age: null, height_cm: null,
+      weight_kg: null, gender: 'male',
+      activity_level: null, goal: null
     };
 
-    // Show username in navbar
     const username = localStorage.getItem('username');
     if (!username) window.location.href = 'auth.html';
     document.getElementById('nav-username').textContent = username;
 
-    // Move to next step and collect data
+    function selectGender(g) {
+      profile.gender = g;
+      document.getElementById('btn-male').classList.toggle('active', g === 'male');
+      document.getElementById('btn-female').classList.toggle('active', g === 'female');
+    }
+
     function goToStep(step) {
       if (step === 2) {
-        // Collect step 1 data
         profile.name = document.getElementById('name').value || null;
+        profile.gender = profile.gender || 'male';
         profile.age = parseInt(document.getElementById('age').value) || null;
         profile.height_cm = parseFloat(document.getElementById('height').value) || null;
         profile.weight_kg = parseFloat(document.getElementById('weight').value) || null;
@@ -134,33 +137,21 @@
       showStep(step);
     }
 
-    // Skip current step without collecting data
-    function skipToStep(step) {
-      showStep(step);
-    }
+    function skipToStep(step) { showStep(step); }
 
-    // Show the correct step and update progress dots
     function showStep(step) {
-      document.getElementById('step-1').style.display = 'none';
-      document.getElementById('step-2').style.display = 'none';
-      document.getElementById('step-3').style.display = 'none';
-      document.getElementById('step-' + step).style.display = 'block';
-
-      // Update progress dots
-      for (let i = 1; i <= 3; i++) {
-        const dot = document.getElementById('step-dot-' + i);
-        dot.classList.toggle('active', i <= step);
-      }
+      [1,2,3].forEach(i => {
+        document.getElementById('step-' + i).style.display = i === step ? 'block' : 'none';
+        document.getElementById('step-dot-' + i).classList.toggle('active', i <= step);
+      });
     }
 
-    // Select activity level option card
     function selectActivity(level) {
       document.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
       document.getElementById('opt-' + level).classList.add('selected');
       profile.activity_level = level;
     }
 
-    // Select goal option card
     function selectGoal(goal) {
       document.getElementById('opt-track').classList.remove('selected');
       document.getElementById('opt-improve').classList.remove('selected');
@@ -169,10 +160,8 @@
       profile.goal = goal;
     }
 
-    // Save profile to backend then go to dashboard
     async function saveAndGo() {
       const token = localStorage.getItem('token');
-
       try {
         await fetch('http://127.0.0.1:8000/profile', {
           method: 'POST',
@@ -185,8 +174,6 @@
       } catch (err) {
         console.log('Profile save failed, continuing anyway.');
       }
-
-      // Go to dashboard regardless
       window.location.href = 'dashboard.html';
     }
   </script>
