@@ -786,3 +786,174 @@ footer {
   font-weight: 700;
   color: #1a1a1a;
 }
+/* GENDER SELECTOR */
+.gender-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.gender-btn {
+  flex: 1;
+  padding: 10px;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  background: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #666;
+}
+
+.gender-btn.active {
+  border-color: #E63946;
+  background: #fff5f5;
+  color: #E63946;
+}
+
+/* NUTRITION AUTO-FILL TAG */
+.nutrition-tag {
+  background: #f0fff4;
+  border: 1px solid #2DC653;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: #1a7a3a;
+  margin-bottom: 8px;
+}
+/* PROFILE PAGE */
+.profile-page {
+  display: flex;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.profile-box {
+  background: white;
+  border: 2px solid #E63946;
+  border-radius: 20px;
+  padding: 40px;
+  width: 100%;
+  max-width: 520px;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.profile-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #E63946;
+  color: white;
+  font-size: 28px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-name {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.profile-username {
+  font-size: 14px;
+  color: #888;
+}
+
+.profile-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.profile-stat {
+  background: #fffdf0;
+  border: 2px solid #F5C842;
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+}
+
+.profile-stat-val {
+  font-size: 24px;
+  font-weight: 800;
+  color: #1a1a1a;
+}
+
+.profile-stat-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #E63946;
+  margin-top: 4px;
+}
+
+.profile-stat-sub {
+  font-size: 11px;
+  color: #888;
+  margin-top: 2px;
+}
+
+.profile-divider {
+  height: 1px;
+  background: #eee;
+  margin: 24px 0;
+}
+
+.profile-section-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.profile-box label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #333;
+  margin-top: 16px;
+}
+
+.profile-box input,
+.profile-box select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  outline: none;
+  background: white;
+}
+
+.profile-box input:focus,
+.profile-box select:focus {
+  border-color: #F5C842;
+}
+
+.save-msg {
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 12px;
+  min-height: 20px;
+}
+
+/* NUTRITION TAG */
+.nutrition-tag {
+  background: #f0fff4;
+  border: 1px solid #2DC653;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: #1a7a3a;
+  margin-bottom: 8px;
+}

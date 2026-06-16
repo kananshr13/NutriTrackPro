@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NutriTrackPro - Profile</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="logo">
+      <span class="brand-name">NutriTrackPro</span>
+    </div>
+    <div class="nav-links">
+      <a href="dashboard.html" class="btn-outline-sm">Back to Dashboard</a>
+      <button class="btn-outline-sm" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <div class="profile-page">
+    <div class="profile-box">
+
+      <div class="profile-header">
+        <div class="profile-avatar" id="profile-avatar">K</div>
+        <div>
+          <div class="profile-name" id="profile-name">Loading...</div>
+          <div class="profile-username" id="profile-username"></div>
+        </div>
+      </div>
+
+      <!-- BMI & CALORIE SUMMARY -->
+      <div class="profile-stats">
+        <div class="profile-stat">
+          <div class="profile-stat-val" id="p-bmi">--</div>
+          <div class="profile-stat-label">BMI</div>
+          <div class="profile-stat-sub" id="p-bmi-label"></div>
+        </div>
+        <div class="profile-stat">
+          <div class="profile-stat-val" id="p-calories">--</div>
+          <div class="profile-stat-label">Daily Target</div>
+          <div class="profile-stat-sub">kcal / day</div>
+        </div>
+        <div class="profile-stat">
+          <div class="profile-stat-val" id="p-goal">--</div>
+          <div class="profile-stat-label">Goal</div>
+          <div class="profile-stat-sub"></div>
+        </div>
+      </div>
+
+      <div class="profile-divider"></div>
+
+      <!-- EDIT FORM -->
+      <h3 class="profile-section-title">Edit Your Details</h3>
+      <p class="form-sub">Changes will recalculate your calorie target automatically</p>
+
+      <label>Your Name</label>
+      <input type="text" id="edit-name" placeholder="Your name" />
+
+      <label>Gender</label>
+      <div class="gender-row">
+        <button class="gender-btn active" id="btn-male" onclick="selectGender('male')">Male</button>
+        <button class="gender-btn" id="btn-female" onclick="selectGender('female')">Female</button>
+      </div>
+
+      <label>Age</label>
+      <input type="number" id="edit-age" placeholder="Your age" />
+
+      <label>Height (cm)</label>
+      <input type="number" id="edit-height" placeholder="e.g. 170" />
+
+      <label>Weight (kg)</label>
+      <input type="number" id="edit-weight" placeholder="e.g. 65" />
+
+      <label>Activity Level</label>
+      <select id="edit-activity">
+        <option value="never">Rarely — mostly sedentary</option>
+        <option value="sometimes">Sometimes — 1 to 3 times a week</option>
+        <option value="frequently">Frequently — 4 or more times a week</option>
+      </select>
+
+      <label>Goal</label>
+      <select id="edit-goal">
+        <option value="track_nutrition">Track Nutrition</option>
+        <option value="improve_health">Improve Health</option>
+      </select>
+
+      <p id="save-msg" class="save-msg"></p>
+      <button class="btn-green full" onclick="saveProfile()">Save Changes</button>
+
+    </div>
+  </div>
+
+  <script>
+    const API = 'http://127.0.0.1:8000';
+    const token = localStorage.getItem('token');
+    const username = localStorage.getItem('username');
+    if (!token) window.location.href = 'auth.html';
+
+    document.getElementById('profile-username').textContent = '@' + username;
+
+    let selectedGender = 'male';
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = 'index.html';
+    }
+
+    function selectGender(g) {
+      selectedGender = g;
+      document.getElementById('btn-male').classList.toggle('active', g === 'male');
+      document.getElementById('btn-female').classList.toggle('active', g === 'female');
+    }
+
+    // Load existing profile data
+    async function loadProfile() {
+      try {
+        const res = await fetch(API + '/profile', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const data = await res.json();
+
+        if (!data || !data.name) {
+          document.getElementById('profile-name').textContent = username;
+          document.getElementById('profile-avatar').textContent = username[0].toUpperCase();
+          return;
+        }
+
+        // Fill summary
+        document.getElementById('profile-name').textContent = data.name || username;
+        document.getElementById('profile-avatar').textContent = (data.name || username)[0].toUpperCase();
+        document.getElementById('p-calories').textContent = data.daily_calorie_target || '--';
+        document.getElementById('p-goal').textContent =
+          data.goal === 'improve_health' ? 'Improve Health' : 'Track Nutrition';
+
+        if (data.height_cm && data.weight_kg) {
+          const h = data.height_cm / 100;
+          const bmi = (data.weight_kg / (h * h)).toFixed(1);
+          document.getElementById('p-bmi').textContent = bmi;
+          document.getElementById('p-bmi-label').textContent =
+            bmi < 18.5 ? 'Underweight' : bmi < 25 ? 'Healthy' : bmi < 30 ? 'Overweight' : 'Obese';
+        }
+
+        // Fill form fields
+        document.getElementById('edit-name').value = data.name || '';
+        document.getElementById('edit-age').value = data.age || '';
+        document.getElementById('edit-height').value = data.height_cm || '';
+        document.getElementById('edit-weight').value = data.weight_kg || '';
+        document.getElementById('edit-activity').value = data.activity_level || 'sometimes';
+        document.getElementById('edit-goal').value = data.goal || 'track_nutrition';
+
+        selectedGender = data.gender || 'male';
+        selectGender(selectedGender);
+
+      } catch (err) {
+        console.log('Could not load profile:', err);
+      }
+    }
+
+    // Save updated profile
+    async function saveProfile() {
+      const profile = {
+        name:           document.getElementById('edit-name').value || null,
+        gender:         selectedGender,
+        age:            parseInt(document.getElementById('edit-age').value) || null,
+        height_cm:      parseFloat(document.getElementById('edit-height').value) || null,
+        weight_kg:      parseFloat(document.getElementById('edit-weight').value) || null,
+        activity_level: document.getElementById('edit-activity').value,
+        goal:           document.getElementById('edit-goal').value
+      };
+
+      try {
+        const res = await fetch(API + '/profile', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify(profile)
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          const msg = document.getElementById('save-msg');
+          msg.textContent = 'Profile saved! New calorie target: ' + data.daily_calorie_target + ' kcal/day';
+          msg.style.color = '#2DC653';
+          loadProfile();
+        }
+      } catch (err) {
+        document.getElementById('save-msg').textContent = 'Could not save. Is the server running?';
+      }
+    }
+
+    loadProfile();
+  </script>
+
+</body>
+</html>
