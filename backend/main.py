@@ -10,7 +10,6 @@ import auth
 
 app = FastAPI(title="NutriTrackPro API")
 
-# Allow frontend to communicate with backend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -19,14 +18,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Create all database tables on startup
 Base.metadata.create_all(bind=engine)
 
 
-# ─────────────────────────────────────────
-# SCHEMAS — define shape of incoming data
-# ─────────────────────────────────────────
-
+# SCHEMAS
 class UserCreate(BaseModel):
     username: str
     email: str
@@ -37,11 +32,12 @@ class ProfileUpdate(BaseModel):
     age: Optional[int] = None
     height_cm: Optional[float] = None
     weight_kg: Optional[float] = None
+    gender: Optional[str] = None
     activity_level: Optional[str] = None
     goal: Optional[str] = None
 
 class MealCreate(BaseModel):
-    meal_type: str       # breakfast, lunch, snacks, dinner
+    meal_type: str
     food_name: str
     calories: float
     protein: float
@@ -49,46 +45,40 @@ class MealCreate(BaseModel):
     fats: float
 
 
-# ─────────────────────────────────────────
-# HELPER — calculate daily calorie target
-# ─────────────────────────────────────────
-
-def calculate_calories(age, weight_kg, height_cm, activity_level, goal):
-    """
-    Uses Mifflin-St Jeor formula to estimate daily calorie needs.
-    Assumes male formula as default (can be extended later).
-    """
+# CALORIE CALCULATOR using Mifflin-St Jeor BMR + TDEE
+def calculate_calories(age, weight_kg, height_cm, activity_level, goal, gender='male'):
     if not all([age, weight_kg, height_cm]):
-        return 2000  # default if profile incomplete
+        return 2000
 
-    bmr = (10 * weight_kg) + (6.25 * height_cm) - (5 * age) + 5
+    # BMR formula differs by gender
+    if gender == 'female':
+        bmr = (10 * weight_kg) + (6.25 * height_cm) - (5 * age) - 161
+    else:
+        bmr = (10 * weight_kg) + (6.25 * height_cm) - (5 * age) + 5
 
-    activity_multipliers = {
-        "frequently": 1.55,
-        "sometimes": 1.375,
-        "never": 1.2
+    # TDEE multipliers
+    tdee_multipliers = {
+        "frequently": 1.725,
+        "sometimes":  1.55,
+        "never":      1.2
     }
-    multiplier = activity_multipliers.get(activity_level, 1.375)
+    multiplier = tdee_multipliers.get(activity_level, 1.55)
     tdee = bmr * multiplier
 
-    # Adjust based on goal
+    # Adjust for goal
     if goal == "improve_health":
-        tdee -= 300  # slight deficit for improvement
+        tdee -= 500
 
     return round(tdee)
 
 
-# ─────────────────────────────────────────
 # AUTH ROUTES
-# ─────────────────────────────────────────
-
 @app.get("/")
 def home():
     return {"message": "NutriTrackPro API is running!"}
 
 @app.post("/signup")
 def signup(user: UserCreate, db: Session = Depends(get_db)):
-    """Create a new user account"""
     existing = db.query(models.User).filter(
         models.User.username == user.username
     ).first()
@@ -110,7 +100,6 @@ def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)
 ):
-    """Login and receive a JWT token"""
     user = db.query(models.User).filter(
         models.User.username == form_data.username
     ).first()
@@ -121,43 +110,39 @@ def login(
     return {"access_token": token, "token_type": "bearer"}
 
 
-# ─────────────────────────────────────────
 # PROFILE ROUTES
-# ─────────────────────────────────────────
-
 @app.post("/profile")
 def save_profile(
     data: ProfileUpdate,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(auth.get_current_user)
 ):
-    """Save or update user health profile from onboarding"""
     profile = db.query(models.UserProfile).filter(
         models.UserProfile.user_id == current_user.id
     ).first()
 
     calorie_target = calculate_calories(
         data.age, data.weight_kg, data.height_cm,
-        data.activity_level, data.goal
+        data.activity_level, data.goal, data.gender
     )
 
     if profile:
-        # Update existing profile
         profile.name = data.name
         profile.age = data.age
         profile.height_cm = data.height_cm
         profile.weight_kg = data.weight_kg
+        profile.gender = data.gender
         profile.activity_level = data.activity_level
         profile.goal = data.goal
         profile.daily_calorie_target = calorie_target
     else:
-        # Create new profile
         profile = models.UserProfile(
             user_id=current_user.id,
             name=data.name,
             age=data.age,
             height_cm=data.height_cm,
             weight_kg=data.weight_kg,
+            gender=data.gender,
             activity_level=data.activity_level,
             goal=data.goal,
             daily_calorie_target=calorie_target
@@ -173,7 +158,6 @@ def get_profile(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(auth.get_current_user)
 ):
-    """Get the logged-in user's profile"""
     profile = db.query(models.UserProfile).filter(
         models.UserProfile.user_id == current_user.id
     ).first()
@@ -182,22 +166,14 @@ def get_profile(
     return profile
 
 
-# ─────────────────────────────────────────
 # MEAL ROUTES
-# ─────────────────────────────────────────
-
 @app.post("/log_meal")
 def log_meal(
     meal: MealCreate,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(auth.get_current_user)
 ):
-    """Log a meal for breakfast, lunch, snacks, or dinner"""
-
-    # Simple health check — flag if calories too high for one meal
     is_healthy = "yes" if meal.calories < 600 else "no"
-
-    # Suggest alternatives for unhealthy meals
     alternative = None
     if is_healthy == "no":
         alternative = "Consider a lighter option like grilled chicken with vegetables or a grain bowl."
@@ -227,7 +203,6 @@ def today_meals(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(auth.get_current_user)
 ):
-    """Get all meals logged today grouped by meal type"""
     from datetime import date
     today = date.today()
 
@@ -236,7 +211,6 @@ def today_meals(
         models.MealLog.logged_at >= today
     ).all()
 
-    # Group by meal type
     grouped = {"breakfast": [], "lunch": [], "snacks": [], "dinner": []}
     total_calories = 0
 
@@ -260,7 +234,6 @@ def weekly_summary(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(auth.get_current_user)
 ):
-    """Get nutrition totals for the past 7 days"""
     from datetime import date, timedelta
     week_ago = date.today() - timedelta(days=7)
 
@@ -283,7 +256,6 @@ async def predict(
     file: UploadFile = File(...),
     current_user: models.User = Depends(auth.get_current_user)
 ):
-    """Placeholder for ML food image prediction — model goes here"""
     return {
         "message": "Image received!",
         "filename": file.filename,

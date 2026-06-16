@@ -14,7 +14,6 @@ class User(Base):
     hashed_password = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
 
-    # Relationship to profile and meals
     profile = relationship("UserProfile", back_populates="owner", uselist=False)
     meals = relationship("MealLog", back_populates="owner")
 
@@ -29,8 +28,9 @@ class UserProfile(Base):
     age = Column(Integer, nullable=True)
     height_cm = Column(Float, nullable=True)
     weight_kg = Column(Float, nullable=True)
-    activity_level = Column(String, nullable=True)  # frequently, sometimes, never
-    goal = Column(String, nullable=True)             # track_nutrition, improve_health
+    gender = Column(String, nullable=True)
+    activity_level = Column(String, nullable=True)
+    goal = Column(String, nullable=True)
     daily_calorie_target = Column(Float, nullable=True)
 
     owner = relationship("User", back_populates="profile")
@@ -42,7 +42,7 @@ class MealLog(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
-    meal_type = Column(String)   # breakfast, lunch, snacks, dinner
+    meal_type = Column(String)
     food_name = Column(String)
     calories = Column(Float)
     protein = Column(Float)
