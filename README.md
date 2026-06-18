@@ -1,8 +1,9 @@
 **Work in Progress**
 ---
-The project is under active development and is not ready for the production and to be deployed.
+The project is under active development and is not ready for the production and  deployement.
 ---
 **App Preview**
+--
 ***main page***
 ![Main Page](screenshots/mainpage.png)
 ***user login***
