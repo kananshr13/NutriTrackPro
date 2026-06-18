@@ -256,8 +256,23 @@ async def predict(
     file: UploadFile = File(...),
     current_user: models.User = Depends(auth.get_current_user)
 ):
+    """
+    Accepts a food image, runs ML classification,
+    returns food name and nutrition data per 100g
+    """
+    from ml_model import predict_food
+
+    image_bytes = await file.read()
+    predictions = predict_food(image_bytes)
+    top = predictions[0]
+
     return {
-        "message": "Image received!",
-        "filename": file.filename,
-        "note": "ML model will be connected here"
+        "top_prediction": top["food"],
+        "confidence": top["confidence"],
+        "calories": top["calories"],
+        "protein": top["protein"],
+        "carbs": top["carbs"],
+        "fats": top["fats"],
+        "alternatives": predictions[1:],
+        "message": f"Detected: {top['food']} ({top['confidence']}% confidence)"
     }
