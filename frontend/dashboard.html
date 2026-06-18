@@ -354,30 +354,48 @@
     }
 
     async function logMealFromUpload(meal) {
-      const fileInput = document.getElementById('img-' + meal);
-      const foodName = document.getElementById('food-upload-' + meal).value || 'Uploaded meal';
-      if (!fileInput.files[0]) { alert('Please upload an image first.'); return; }
+  const fileInput = document.getElementById('img-' + meal);
+  const customName = document.getElementById('food-upload-' + meal).value;
 
-      const formData = new FormData();
-      formData.append('file', fileInput.files[0]);
+  if (!fileInput.files[0]) {
+    alert('Please upload an image first.');
+    return;
+  }
 
-      try {
-        await fetch(API + '/predict', {
-          method: 'POST',
-          headers: { 'Authorization': 'Bearer ' + token },
-          body: formData
-        });
-        await fetch(API + '/log_meal', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-          body: JSON.stringify({ meal_type: meal, food_name: foodName, calories: 0, protein: 0, carbs: 0, fats: 0 })
-        });
-        alert('Image uploaded! ML model will auto-fill nutrition once connected.');
-        loadTodayMeals();
-      } catch (err) {
-        alert('Could not upload. Is the server running?');
-      }
-    }
+  const previewEl = document.getElementById('preview-' + meal);
+  previewEl.innerHTML = '<div style="text-align:center;padding:20px;color:#888;">Analysing image...</div>';
+
+  const formData = new FormData();
+  formData.append('file', fileInput.files[0]);
+
+  try {
+    const res = await fetch(API + '/predict', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token },
+      body: formData
+    });
+
+    const data = await res.json();
+
+    // Auto fill food name and macros from prediction
+    const foodName = customName || data.top_prediction;
+    document.getElementById('food-upload-' + meal).value = foodName;
+
+    // Switch to manual tab and fill in the predicted values
+    switchTab(meal, 'manual');
+    document.getElementById('food-' + meal).value = foodName;
+    document.getElementById('cal-input-' + meal).value = data.calories;
+    document.getElementById('protein-' + meal).value = data.protein;
+    document.getElementById('carbs-' + meal).value = data.carbs;
+    document.getElementById('fats-' + meal).value = data.fats;
+
+    // Show what was detected
+    showNutritionTag(meal, `${data.top_prediction} (${data.confidence}% confidence)`, data.calories);
+
+  } catch (err) {
+    alert('Could not analyse image. Is the server running?');
+  }
+}
 
     // Auto-fetch nutrition with English product priority
     async function searchNutrition(mealType) {
