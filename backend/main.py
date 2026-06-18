@@ -204,11 +204,13 @@ def today_meals(
     current_user: models.User = Depends(auth.get_current_user)
 ):
     from datetime import date
-    today = date.today()
-
+    today_start = datetime.combine(
+        date.today(),
+        time.min
+    )
     meals = db.query(models.MealLog).filter(
         models.MealLog.user_id == current_user.id,
-        models.MealLog.logged_at >= today
+        models.MealLog.logged_at >= today_start
     ).all()
 
     grouped = {"breakfast": [], "lunch": [], "snacks": [], "dinner": []}

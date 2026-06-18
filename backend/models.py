@@ -50,6 +50,10 @@ class MealLog(Base):
     fats = Column(Float)
     is_healthy = Column(String, nullable=True)
     alternative = Column(String, nullable=True)
-    logged_at = Column(DateTime, default=datetime.utcnow)
+    from datetime import datetime, timedelta
+    logged_at = Column(
+        DateTime,
+        default=lambda:datetime.utcnow() + timedelta(hours=5, minutes=30) 
+        )
 
     owner = relationship("User", back_populates="meals")
