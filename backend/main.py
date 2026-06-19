@@ -7,6 +7,8 @@ from typing import Optional
 from database import Base, engine, get_db
 import models
 import auth
+import os 
+import requests as http_requests
 
 app = FastAPI(title="NutriTrackPro API")
 
@@ -287,3 +289,44 @@ async def predict(
         "alternatives": predictions[1:],
         "message": f"Detected: {top['food']} ({top['confidence']}% confidence)"
     }
+
+@app.get("/nutrition_search")
+def nutrition_search(
+    query: str,
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    """
+    Proxy route — frontend calls this, backend calls USDA with hidden API key
+    """
+    api_key = os.getenv("USDA_API_KEY")
+    
+    try:
+        res = http_requests.get(
+            f"https://api.nal.usda.gov/fdc/v1/foods/search",
+            params={
+                "query": query,
+                "pageSize": 1,
+                "api_key": api_key
+            }
+        )
+        data = res.json()
+        
+        if data.get("foods") and len(data["foods"]) > 0:
+            food = data["foods"][0]
+            nutrients = food["foodNutrients"]
+
+            def get(name):
+                n = next((n for n in nutrients if name in n.get("nutrientName", "")), None)
+                return round(n["value"]) if n else 0
+
+            return {
+                "found": True,
+                "name": food["description"],
+                "calories": get("Energy"),
+                "protein": get("Protein"),
+                "carbs": get("Carbohydrate"),
+                "fats": get("Total lipid")
+            }
+        return {"found": False}
+    except Exception as e:
+        return {"found": False, "error": str(e)}
