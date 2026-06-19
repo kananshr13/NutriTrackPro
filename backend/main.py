@@ -79,11 +79,19 @@ def home():
 
 @app.post("/signup")
 def signup(user: UserCreate, db: Session = Depends(get_db)):
-    existing = db.query(models.User).filter(
+    # Check if username already taken
+    existing_username = db.query(models.User).filter(
         models.User.username == user.username
     ).first()
-    if existing:
+    if existing_username:
         raise HTTPException(status_code=400, detail="Username already taken")
+
+    # Check if email already taken
+    existing_email = db.query(models.User).filter(
+        models.User.email == user.email
+    ).first()
+    if existing_email:
+        raise HTTPException(status_code=400, detail="Email already registered")
 
     new_user = models.User(
         username=user.username,
@@ -203,11 +211,12 @@ def today_meals(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(auth.get_current_user)
 ):
-    from datetime import date
-    today_start = datetime.combine(
-        date.today(),
-        time.min
-    )
+    from datetime import datetime, timedelta, date
+
+    # Use IST timezone offset to match how meals are stored
+    now_ist = datetime.utcnow() + timedelta(hours=5, minutes=30)
+    today_start = now_ist.replace(hour=0, minute=0, second=0, microsecond=0)
+
     meals = db.query(models.MealLog).filter(
         models.MealLog.user_id == current_user.id,
         models.MealLog.logged_at >= today_start

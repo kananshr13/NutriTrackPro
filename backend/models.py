@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from database import Base
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 class User(Base):
@@ -50,10 +50,6 @@ class MealLog(Base):
     fats = Column(Float)
     is_healthy = Column(String, nullable=True)
     alternative = Column(String, nullable=True)
-    from datetime import datetime, timedelta
-    logged_at = Column(
-        DateTime,
-        default=lambda:datetime.utcnow() + timedelta(hours=5, minutes=30) 
-        )
+    logged_at = Column(DateTime, default=lambda: datetime.utcnow() + timedelta(hours=5, minutes=30))
 
     owner = relationship("User", back_populates="meals")
