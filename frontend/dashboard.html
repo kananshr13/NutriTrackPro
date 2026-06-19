@@ -417,34 +417,34 @@
 
     function debounceSearch(mealType) {
       clearTimeout(debounceTimer);
+      const foodName = document.getElementById('food-' + mealType).value.trim();
+      if (foodName.length < 3) return;
       debounceTimer = setTimeout(() => {
         searchNutrition(mealType);
-      }, 800);
+      }, 1000);
     }
     // Auto-fetch nutrition with English product priority
     async function searchNutrition(mealType) {
       const foodName = document.getElementById('food-' + mealType).value.trim();
-      if (foodName.length < 2) return;
-
-    try {
-      const res = await fetch(
-        `${API}/nutrition_search?query=${encodeURIComponent(foodName)}`,
-        {
-          headers: { 'Authorization': 'Bearer ' + token }
+      if (foodName.length < 3) return;
+      try {
+        const res = await fetch(
+          `${API}/nutrition_search?query=${encodeURIComponent(foodName)}`,
+          { headers: { 'Authorization': 'Bearer ' + token } }
+        );
+        const data = await res.json();
+        console.log('Nutrition data:', data);  // ADD THIS
+        if (data.found) {
+          document.getElementById('cal-input-' + mealType).value = data.calories;
+          document.getElementById('protein-' + mealType).value = data.protein;
+          document.getElementById('carbs-' + mealType).value = data.carbs;
+          document.getElementById('fats-' + mealType).value = data.fats;
+          showNutritionTag(mealType, data.name, data.calories);
         }
-      );
-      const data = await res.json();
-      if (data.found) {
-        document.getElementById('cal-input-' + mealType).value = data.calories;
-        document.getElementById('protein-' + mealType).value = data.protein;
-        document.getElementById('carbs-' + mealType).value = data.carbs;
-        document.getElementById('fats-' + mealType).value = data.fats;
-        showNutritionTag(mealType, data.name, data.calories);
+      } catch (err) {
+        console.log('Nutrition search failed:', err);
       }
-    } catch (err) {
-      console.log('Nutrition search failed:', err);
     }
-  }
 
     function showNutritionTag(mealType, name, calories) {
       const existing = document.getElementById('nutrition-tag-' + mealType);

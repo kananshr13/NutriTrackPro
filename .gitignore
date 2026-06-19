@@ -1,15 +1,8 @@
-# Python
 __pycache__/
 *.pyc
 venv/
 .env
-
-# Database
 *.db
-
-# ML model (too large for GitHub)
 *.h5
 *.keras
-
-# Mac
 .DS_Store
