@@ -178,7 +178,7 @@
     async function saveAndGo() {
       const token = localStorage.getItem('token');
       try {
-        await fetch('http://127.0.0.1:8000/profile', {
+        await fetch('https://nutritrackpro-api.onrender.com/profile', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
