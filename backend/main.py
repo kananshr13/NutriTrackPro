@@ -230,6 +230,7 @@ def today_meals(
     for meal in meals:
         if meal.meal_type in grouped:
             grouped[meal.meal_type].append({
+                "id": meal.id,
                 "food_name": meal.food_name,
                 "calories": meal.calories,
                 "protein": meal.protein,
@@ -330,3 +331,22 @@ def nutrition_search(
         return {"found": False}
     except Exception as e:
         return {"found": False, "error": str(e)}
+
+@app.delete("/delete_meal/{meal_id}")
+def delete_meal(
+    meal_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    """Delete a specific meal log entry"""
+    meal = db.query(models.MealLog).filter(
+        models.MealLog.id == meal_id,
+        models.MealLog.user_id == current_user.id
+    ).first()
+
+    if not meal:
+        raise HTTPException(status_code=404, detail="Meal not found")
+
+    db.delete(meal)
+    db.commit()
+    return {"message": "Meal deleted!"}

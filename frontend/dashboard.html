@@ -546,6 +546,7 @@
               <span class="log-name">${log.food_name}</span>
               <span class="log-macros">${log.protein || 0}g P · ${log.carbs || 0}g C · ${log.fats || 0}g F</span>
               <span class="log-kcal">${log.calories} kcal</span>
+              <button class="delete-btn" onclick="deleteMeal(${log.id})">x</button>
             `;
             container.appendChild(el);
           });
@@ -600,7 +601,23 @@
         console.log('Could not load weekly summary:', err);
       }
     }
-  </script>
 
+    async function deleteMeal(mealId) {
+      try {
+        const res = await fetch(API + '/delete_meal/' + mealId, {
+          method: 'DELETE',
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        
+        if (res.ok) {
+          loadTodayMeals();
+          loadWeeklySummary();
+        }
+      } catch (err) {
+        alert('Could not delete meal. Is the server running?');
+      }
+    }
+  </script>
+  
 </body>
 </html>

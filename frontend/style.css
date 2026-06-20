@@ -957,3 +957,21 @@ footer {
   color: #1a7a3a;
   margin-bottom: 8px;
 }
+
+/* DELETE BUTTON */
+.delete-btn {
+  background: none;
+  border: none;
+  color: #E63946;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  width: auto;
+  margin-left: 8px;
+}
+
+.delete-btn:hover {
+  background: #fff0f0;
+}
