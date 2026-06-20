@@ -77,8 +77,10 @@
 
     </div>
   </div>
-
+  
   <script>
+    // Keep server warm
+    fetch('https://nutritrackpro-api.onrender.com').catch(() => {});
     // ── Check URL to decide which tab to show on load
     const params = new URLSearchParams(window.location.search);
     if (params.get('mode') === 'signup') showSignup();

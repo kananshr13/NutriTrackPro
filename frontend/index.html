@@ -117,3 +117,8 @@
 
 </body>
 </html>
+<script>
+  // Wake up the backend server when landing page loads
+  fetch('https://nutritrackpro-api.onrender.com')
+    .catch(() => {});
+</script>
