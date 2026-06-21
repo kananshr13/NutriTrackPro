@@ -406,12 +406,12 @@
     document.getElementById('fats-' + meal).value = data.fats;
 
     // Show what was detected
-    showNutritionTag(meal, `${data.top_prediction} (${data.confidence}% confidence)`, data.calories {
-      protien: data.protein,
+    showNutritionTag(meal, `${data.top_prediction} (${data.confidence}% confidence)`, data.calories, {
+      protein: data.protein,
       carbs: data.carbs,
       fats: data.fats
     });
-    
+
   } catch (err) {
     alert('Could not analyse image. Is the server running?');
   }
