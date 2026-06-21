@@ -462,9 +462,9 @@
       if (existingPortion) existingPortion.remove();
       window['baseMacros_' + mealType] = {
         calories: caloriesPer100g,
-        protein: baseMacros.protein,
-        carbs: baseMacros.carbs,
-        fats: baseMacros.fats
+        protein: baseMacros && baseMacros.protein ? baseMacros.protein : parseFloat(document.getElementById('protein-' + mealType).value) || 0,
+        carbs: baseMacros && baseMacros.carbs ? baseMacros.carbs : parseFloat(document.getElementById('carbs-' + mealType).value) || 0,
+        fats: baseMacros && baseMacros.fats ? baseMacros.fats : parseFloat(document.getElementById('fats-' + mealType).value) || 0
       };
       const tag = document.createElement('div');
       tag.id = 'nutrition-tag-' + mealType;
