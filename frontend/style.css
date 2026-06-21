@@ -975,3 +975,41 @@ footer {
 .delete-btn:hover {
   background: #fff0f0;
 }
+
+/* PORTION SELECTOR */
+.portion-selector {
+  margin-bottom: 10px;
+  background: #fffdf0;
+  border: 1px solid #F5C842;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.portion-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.portion-options select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  outline: none;
+  background: white;
+}
+
+.portion-options select:focus {
+  border-color: #F5C842;
+}
+
+.portion-result {
+  font-size: 12px;
+  font-weight: 600;
+  color: #2DC653;
+  margin-top: 8px;
+}

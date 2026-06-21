@@ -406,8 +406,12 @@
     document.getElementById('fats-' + meal).value = data.fats;
 
     // Show what was detected
-    showNutritionTag(meal, `${data.top_prediction} (${data.confidence}% confidence)`, data.calories);
-
+    showNutritionTag(meal, `${data.top_prediction} (${data.confidence}% confidence)`, data.calories {
+      protien: data.protein,
+      carbs: data.carbs,
+      fats: data.fats
+    });
+    
   } catch (err) {
     alert('Could not analyse image. Is the server running?');
   }
@@ -439,23 +443,112 @@
           document.getElementById('protein-' + mealType).value = data.protein;
           document.getElementById('carbs-' + mealType).value = data.carbs;
           document.getElementById('fats-' + mealType).value = data.fats;
-          showNutritionTag(mealType, data.name, data.calories);
+          showNutritionTag(mealType, data.name, data.calories, {
+            protien: data.protein,
+            carbs: data.carbs,
+            fats: data.fats
+          });
         }
       } catch (err) {
         console.log('Nutrition search failed:', err);
       }
     }
 
-    function showNutritionTag(mealType, name, calories) {
+    function showNutritionTag(mealType, name, caloriesPer100g, baseMacros) {
       const existing = document.getElementById('nutrition-tag-' + mealType);
       if (existing) existing.remove();
+      const existingPortion = document.getElementById('portion-' + mealType);
+      // Store base macros per 100g for recalculation
+      if (existingPortion) existingPortion.remove();
+      window['baseMacros_' + mealType] = {
+        calories: caloriesPer100g,
+        protein: baseMacros.protein,
+        carbs: baseMacros.carbs,
+        fats: baseMacros.fats
+      };
       const tag = document.createElement('div');
       tag.id = 'nutrition-tag-' + mealType;
       tag.className = 'nutrition-tag';
-      tag.textContent = `Found: ${name} — ${calories} kcal per 100g`;
+      tag.textContent = `Found: ${name} — ${caloriesPer100g} kcal per 100g`;
       const input = document.getElementById('food-' + mealType);
       input.parentNode.insertBefore(tag, input.nextSibling);
-    }
+      // Show portion selector
+      const portion = document.createElement('div');
+      portion.id = 'portion-' + mealType;
+      portion.className = 'portion-selector';
+      portion.innerHTML = `
+      <div class="portion-label">Select portion size:</div>
+      <div class="portion-options">
+        <select id="portion-type-${mealType}" onchange="updatePortion('${mealType}')">
+          <optgroup label="Weight">
+            <option value="100">100g (standard)</option>
+            <option value="50">50g (half serving)</option>
+            <option value="150">150g</option>
+            <option value="200">200g</option>
+            <option value="250">250g (large serving)</option>
+            <option value="300">300g</option>
+            </optgroup>
+          <optgroup label="Common Bowls">
+            <option value="150">Small Bowl (~150g)</option>
+            <option value="250">Medium Bowl (~250g)</option>
+            <option value="350">Large Bowl (~350g)</option>
+            </optgroup>
+          <optgroup label="Common Plates">
+          <option value="200">Small Plate (~200g)</option>
+          <option value="350">Full Plate (~350g)</option>
+          </optgroup>
+          <optgroup label="Pieces / Units">
+          <option value="custom">Custom (enter grams)</option>
+          </optgroup>
+        </select>
+        <input type="number" id="custom-grams-${mealType}"
+          placeholder="Enter grams"
+          style="display:none; margin-top:8px;"
+          oninput="updatePortion('${mealType}')" />
+    </div>
+    <div class="portion-result" id="portion-result-${mealType}">
+      Showing values for 100g
+    </div>
+  `;
+  tag.parentNode.insertBefore(portion, tag.nextSibling);
+
+  // Set default to 100g
+  updatePortion(mealType);
+}
+
+function updatePortion(mealType) {
+  const select = document.getElementById('portion-type-' + mealType);
+  const customInput = document.getElementById('custom-grams-' + mealType);
+  const resultEl = document.getElementById('portion-result-' + mealType);
+  const base = window['baseMacros_' + mealType];
+
+  if (!base) return;
+
+  let grams = 100;
+
+  if (select.value === 'custom') {
+    customInput.style.display = 'block';
+    grams = parseFloat(customInput.value) || 100;
+  } else {
+    customInput.style.display = 'none';
+    grams = parseFloat(select.value);
+  }
+
+  // Recalculate macros based on portion size
+  const multiplier = grams / 100;
+  const calories = Math.round(base.calories * multiplier);
+  const protein  = Math.round(base.protein * multiplier);
+  const carbs    = Math.round(base.carbs * multiplier);
+  const fats     = Math.round(base.fats * multiplier);
+
+  // Update the input fields
+  document.getElementById('cal-input-' + mealType).value = calories;
+  document.getElementById('protein-' + mealType).value = protein;
+  document.getElementById('carbs-' + mealType).value = carbs;
+  document.getElementById('fats-' + mealType).value = fats;
+
+  resultEl.textContent = `${grams}g → ${calories} kcal · ${protein}g P · ${carbs}g C · ${fats}g F`;
+}
 
     async function loadProfile() {
       try {
