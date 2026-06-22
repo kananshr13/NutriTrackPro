@@ -69,6 +69,7 @@ def predict_food(image_bytes: bytes):
             data=image_bytes,
             timeout=30
         )
+        print("HF Response:", response.status_code, response.text[:200])
         predictions = response.json()
 
         if isinstance(predictions, list) and len(predictions) > 0:
