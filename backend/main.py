@@ -350,3 +350,12 @@ def delete_meal(
     db.delete(meal)
     db.commit()
     return {"message": "Meal deleted!"}
+
+@app.get("/config")
+def get_config(
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    """Returns config needed by frontend — only accessible when logged in"""
+    return {
+        "hf_token": os.getenv("HF_TOKEN", "")
+    }
