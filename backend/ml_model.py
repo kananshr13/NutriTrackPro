@@ -1,5 +1,6 @@
 import requests
 import os
+import io
 from huggingface_hub import InferenceClient
 
 # HuggingFace Inference API — model runs on their servers, not ours
@@ -68,7 +69,7 @@ def predict_food(image_bytes: bytes):
         )
 
         result = client.image_classification(
-            image_bytes,
+            io.BytesIO(image_bytes),
             model="nateraw/food"
         )
 
