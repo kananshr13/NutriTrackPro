@@ -395,63 +395,34 @@
       const previewEl = document.getElementById('preview-' + meal);
       previewEl.innerHTML = '<div style="text-align:center;padding:20px;color:#888;">Analysing image... please wait</div>';
 
+      const formData = new formData();
+      formData.append('file',fileInput.files[0]);
+
       try {
         // Convert image to base64 for HuggingFace
-        const file = fileInput.files[0];
-        const arrayBuffer = await file.arrayBuffer();
-        const blob = new Blob([arrayBuffer], { type: file.type });
+        const res = await fetch (API + '/predict', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token},
+          body: formData
+        });
+        const data = await res.json();
+        const foodName = customName || data.top_prediction;
 
-        // Call HuggingFace directly from browser
-        const hfRes = await fetch(
-          'https://api-inference.huggingface.co/models/nateraw/food',
-          {
-            method: 'POST',
-            headers: {
-              'Authorization': 'Bearer ' + HF_TOKEN
-            },
-            body: blob
-          }
-        );
-      
-        const predictions = await hfRes.json();
-        console.log('HF predictions:', predictions);
-
-        let foodName = customName || 'Unknown food';
-        let topLabel = 'unknown';
-        let confidence = 0;
-
-        if (Array.isArray(predictions) && predictions.length > 0) {
-          topLabel = predictions[0].label;
-          confidence = Math.round(predictions[0].score * 100);
-          foodName = customName || topLabel.replace(/_/g, ' ');
-        }
-
-        // Look up nutrition from our backend
-        const nutritionRes = await fetch(
-          `${API}/nutrition_search?query=${encodeURIComponent(topLabel)}`,
-          { headers: { 'Authorization': 'Bearer ' + token } }
-        );
-        const nutritionData = await nutritionRes.json();
-        const calories = nutritionData.found ? nutritionData.calories : 200;
-        const protein  = nutritionData.found ? nutritionData.protein : 8;
-        const carbs    = nutritionData.found ? nutritionData.carbs : 25;
-        const fats     = nutritionData.found ? nutritionData.fats : 8;
-
-        // Switch to manual tab and fill values
         switchTab(meal, 'manual');
         document.getElementById('food-' + meal).value = foodName;
-        document.getElementById('cal-input-' + meal).value = calories;
-        document.getElementById('protein-' + meal).value = protein;
-        document.getElementById('carbs-' + meal).value = carbs;
-        document.getElementById('fats-' + meal).value = fats;
+        document.getElementById('cal-input-' + meal).value = data.calories;
+        document.getElementById('protein-' + meal).value = data.protein;
+        document.getElementById('carbs-' + meal).value = data.carbs;
+        document.getElementById('fats-' + meal).value = data.fats;
 
-        showNutritionTag(meal, `${foodName} (${confidence}% confidence)`, calories, {
-          protein, carbs, fats
+        showNutritionTag(meal, `${data.top_prediction} (${data.confidence}% confidence)`, data.calories, {
+          protein: data.protein,
+          carbs: data.carbs,
+          fats: data.fats,
         });
-        
-      } catch (err) {
+      } catch (err){
         console.log('Image analysis failed:', err);
-        alert('Could not analyse image. Please type the food name manually.');
+        alert('Could not analyse image. Please try again.');
       }
     }
     //// Debounce timer — waits 800ms after user stops typing before searching//

@@ -3,7 +3,7 @@ import os
 import base64
 
 # HuggingFace Inference API — model runs on their servers, not ours
-HF_API_URL = "https://api-inference.huggingface.co/models/nateraw/food"
+HF_API_URL = "https://router.huggingface.co/hf-inference/models/nateraw/food/v1/image-classification"
 HF_TOKEN = os.getenv("HF_TOKEN", "")
 
 NUTRITION_DB = {
@@ -58,7 +58,9 @@ def predict_food(image_bytes: bytes):
     Sends image to HuggingFace Inference API
     Model runs on their servers — no memory issues
     """
-    headers = {}
+    headers = {
+        "Content-Type": "application/octet-stream"
+    }
     if HF_TOKEN:
         headers["Authorization"] = f"Bearer {HF_TOKEN}"
 
@@ -67,9 +69,9 @@ def predict_food(image_bytes: bytes):
             HF_API_URL,
             headers=headers,
             data=image_bytes,
-            timeout=30
+            timeout=60
         )
-        print("HF Response:", response.status_code, response.text[:200])
+        print("HF Response:", response.status_code, response.text[:300])
         predictions = response.json()
 
         if isinstance(predictions, list) and len(predictions) > 0:
