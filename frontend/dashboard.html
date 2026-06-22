@@ -395,15 +395,15 @@
       const previewEl = document.getElementById('preview-' + meal);
       previewEl.innerHTML = '<div style="text-align:center;padding:20px;color:#888;">Analysing image... please wait</div>';
 
-      const formData = new formData();
-      formData.append('file',fileInput.files[0]);
+      const uploadData = new FormData();
+      uploadData.append('file',fileInput.files[0]);
 
       try {
         // Convert image to base64 for HuggingFace
         const res = await fetch (API + '/predict', {
           method: 'POST',
           headers: { 'Authorization': 'Bearer ' + token},
-          body: formData
+          body: uploadData
         });
         const data = await res.json();
         const foodName = customName || data.top_prediction;
