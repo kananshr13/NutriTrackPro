@@ -1,6 +1,5 @@
 import requests
-import os
-import base64
+from huggingface_hub import InferenceClient
 
 # HuggingFace Inference API — model runs on their servers, not ours
 HF_API_URL = "https://api-inference.huggingface.co/models/nateraw/food"
@@ -55,54 +54,35 @@ def get_nutrition(food_label: str):
 
 def predict_food(image_bytes: bytes):
     """
-    Sends image to HuggingFace Inference API
-    Model runs on their servers — no memory issues
+    Sends image to Hugging Face Inference API
+    using the official InferenceClient.
     """
-    headers = {
-        "Content-Type": "application/octet-stream"
-    }
-    if HF_TOKEN:
-        headers["Authorization"] = f"Bearer {HF_TOKEN}"
+
     print("HF token exists:", bool(HF_TOKEN))
 
     try:
-        response = requests.post(
-            HF_API_URL,
-            headers=headers,
-            data=image_bytes,
-            timeout=60
+        client = InferenceClient(
+            provider="hf-inference",
+            api_key=HF_TOKEN
         )
-        print("HF URL:", HF_API_URL)
-        print("HF Response:", response.status_code)
-        print("HF Text:", response.text[:500])
 
-        if response.status_code != 200:
-            print("HuggingFace request failed")
-            return [{
-                "food": "unknown",
-                "confidence": 0,
-                "calories": 200,
-                "protein": 8,
-                "carbs": 25,
-                "fats": 8
-            }]
-        predictions = response.json()
+        result = client.image_classification(
+            image_bytes,
+            model="nateraw/food"
+        )
 
-        if isinstance(predictions, list) and len(predictions) > 0:
-            results = []
-            for pred in predictions[:3]:
-                label = pred.get("label", "unknown")
-                confidence = round(pred.get("score", 0) * 100, 1)
-                nutrition = get_nutrition(label)
-                results.append({
-                    "food": label.replace("_", " ").title(),
-                    "confidence": confidence,
-                    "calories": nutrition["calories"],
-                    "protein": nutrition["protein"],
-                    "carbs": nutrition["carbs"],
-                    "fats": nutrition["fats"]
-                })
-            return results
+        print("HF Result:", result)
+
+        # TEMPORARY DEBUG RETURN
+        return [{
+            "food": "Debug",
+            "confidence": 0,
+            "calories": 200,
+            "protein": 8,
+            "carbs": 25,
+            "fats": 8
+        }]
+
     except Exception as e:
         print(f"HuggingFace API error: {e}")
 
