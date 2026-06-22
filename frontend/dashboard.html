@@ -315,20 +315,10 @@
     const API = 'https://nutritrackpro-api.onrender.com';
     const token = localStorage.getItem('token');
     const username = localStorage.getItem('username');
-    let HF_TOKEN = '';
+    
 
     // Load config from backend on startup
-    async function loadConfig() {
-      try {
-        const res = await fetch(API + '/config', {
-          headers: { 'Authorization': 'Bearer ' + token }
-        });
-        const data = await res.json();
-        HF_TOKEN = data.hf_token;
-      } catch (err) {
-        console.log('Could not load config');
-      }
-    }
+
     if (!token) window.location.href = 'auth.html';
 
     document.getElementById('nav-username').textContent = username;
@@ -338,7 +328,6 @@
     let totalProtein = 0, totalCarbs = 0, totalFats = 0;
 
     window.onload = function () {
-      loadConfig();
       loadProfile();
       loadTodayMeals();
       loadWeeklySummary();
@@ -453,7 +442,7 @@
           document.getElementById('carbs-' + mealType).value = data.carbs;
           document.getElementById('fats-' + mealType).value = data.fats;
           showNutritionTag(mealType, data.name, data.calories, {
-            protien: data.protein,
+            protein: data.protein,
             carbs: data.carbs,
             fats: data.fats
           });

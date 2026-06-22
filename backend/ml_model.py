@@ -63,7 +63,8 @@ def predict_food(image_bytes: bytes):
     }
     if HF_TOKEN:
         headers["Authorization"] = f"Bearer {HF_TOKEN}"
-
+    print("HF token exists:", bool(HF_TOKEN))
+    
     try:
         response = requests.post(
             HF_API_URL,
@@ -71,7 +72,20 @@ def predict_food(image_bytes: bytes):
             data=image_bytes,
             timeout=60
         )
-        print("HF Response:", response.status_code, response.text[:300])
+        print("HF URL:", HF_API_URL)
+        print("HF Response:", response.status_code)
+        print("HF Text:", response.text[:500])
+
+        if response.status_code != 200:
+            print("HuggingFace request failed")
+            return [{
+                "food": "unknown",
+                "confidence": 0,
+                "calories": 200,
+                "protein": 8,
+                "carbs": 25,
+                "fats": 8
+            }]
         predictions = response.json()
 
         if isinstance(predictions, list) and len(predictions) > 0:
