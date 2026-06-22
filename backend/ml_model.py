@@ -3,7 +3,7 @@ import os
 import base64
 
 # HuggingFace Inference API — model runs on their servers, not ours
-HF_API_URL = "https://router.huggingface.co/hf-inference/models/nateraw/food/v1/image-classification"
+HF_API_URL = "https://api-inference.huggingface.co/models/nateraw/food"
 HF_TOKEN = os.getenv("HF_TOKEN", "")
 
 NUTRITION_DB = {
@@ -64,7 +64,7 @@ def predict_food(image_bytes: bytes):
     if HF_TOKEN:
         headers["Authorization"] = f"Bearer {HF_TOKEN}"
     print("HF token exists:", bool(HF_TOKEN))
-    
+
     try:
         response = requests.post(
             HF_API_URL,
