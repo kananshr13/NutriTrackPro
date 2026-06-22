@@ -1,4 +1,5 @@
 import requests
+import os
 from huggingface_hub import InferenceClient
 
 # HuggingFace Inference API — model runs on their servers, not ours
