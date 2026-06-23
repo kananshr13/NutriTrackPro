@@ -69,7 +69,7 @@ def predict_food(image_bytes: bytes):
         )
 
         result = client.image_classification(
-            io.BytesIO(image_bytes),
+            image_bytes,
             model="nateraw/food"
         )
 

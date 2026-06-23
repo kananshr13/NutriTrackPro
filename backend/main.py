@@ -277,6 +277,8 @@ async def predict(
     from ml_model import predict_food
 
     image_bytes = await file.read()
+    print("Filename:",file.filename)
+    print("Content type:",file.content_type)
     predictions = predict_food(image_bytes)
     top = predictions[0]
 
