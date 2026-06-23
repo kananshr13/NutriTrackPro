@@ -6,6 +6,10 @@
   <title>NutriTrackPro - Dashboard</title>
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <script type="module">
+  import { HfInference } from 'https://cdn.jsdelivr.net/npm/@huggingface/inference@2.6.4/+esm';
+  window.HfInference = HfInference;
+</script>
 </head>
 <body>
 
@@ -381,37 +385,63 @@
         alert('Please upload an image first.');
         return;
       }
+
       const previewEl = document.getElementById('preview-' + meal);
       previewEl.innerHTML = '<div style="text-align:center;padding:20px;color:#888;">Analysing image... please wait</div>';
 
-      const uploadData = new FormData();
-      uploadData.append('file',fileInput.files[0]);
-
       try {
-        // Convert image to base64 for HuggingFace
-        const res = await fetch (API + '/predict', {
-          method: 'POST',
-          headers: { 'Authorization': 'Bearer ' + token},
-          body: uploadData
+        const configRes = await fetch(API + '/config', { // Get HF token from backend
+          headers: { 'Authorization': 'Bearer ' + token }
         });
-        const data = await res.json();
-        const foodName = customName || data.top_prediction;
+        const config = await configRes.json();
+
+        const hf = new window.HfInference(config.hf_token);
+
+        const blob = fileInput.files[0];
+
+        const predictions = await hf.imageClassification({
+          model: 'nateraw/food',
+          data: blob
+        });
+
+        console.log('Predictions:', predictions);
+
+        let foodName = 'Unknown food';
+        let confidence = 0;
+        let topLabel = 'unknown';
+
+        if (predictions && predictions.length > 0) {
+          topLabel = predictions[0].label;
+          confidence = Math.round(predictions[0].score * 100);
+          foodName = customName || topLabel.replace(/_/g, ' ');
+        }
+
+        // Get nutrition from backend
+        const nutritionRes = await fetch(
+          `${API}/nutrition_search?query=${encodeURIComponent(topLabel)}`,
+          { headers: { 'Authorization': 'Bearer ' + token } }
+        );
+        const nutritionData = await nutritionRes.json();
+
+        const calories = nutritionData.found ? nutritionData.calories : 200;
+        const protein  = nutritionData.found ? nutritionData.protein : 8;
+        const carbs    = nutritionData.found ? nutritionData.carbs : 25;
+        const fats     = nutritionData.found ? nutritionData.fats : 8;
 
         switchTab(meal, 'manual');
         document.getElementById('food-' + meal).value = foodName;
-        document.getElementById('cal-input-' + meal).value = data.calories;
-        document.getElementById('protein-' + meal).value = data.protein;
-        document.getElementById('carbs-' + meal).value = data.carbs;
-        document.getElementById('fats-' + meal).value = data.fats;
+        document.getElementById('cal-input-' + meal).value = calories;
+        document.getElementById('protein-' + meal).value = protein;
+        document.getElementById('carbs-' + meal).value = carbs;
+        document.getElementById('fats-' + meal).value = fats;
 
-        showNutritionTag(meal, `${data.top_prediction} (${data.confidence}% confidence)`, data.calories, {
-          protein: data.protein,
-          carbs: data.carbs,
-          fats: data.fats,
+        showNutritionTag(meal, `${foodName} (${confidence}% confidence)`, calories, {
+          protein, carbs, fats
         });
-      } catch (err){
+
+      } catch (err) {
         console.log('Image analysis failed:', err);
-        alert('Could not analyse image. Please try again.');
+        alert('Could not analyse image. Please try again or type the food name manually.');
       }
     }
     //// Debounce timer — waits 800ms after user stops typing before searching//
