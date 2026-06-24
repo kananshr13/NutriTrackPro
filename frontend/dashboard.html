@@ -6,10 +6,6 @@
   <title>NutriTrackPro - Dashboard</title>
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
-  <script type="module">
-  import { HfInference } from 'https://cdn.jsdelivr.net/npm/@huggingface/inference@2.6.4/+esm';
-  window.HfInference = HfInference;
-</script>
 </head>
 <body>
 
@@ -376,11 +372,11 @@
       };
       reader.readAsDataURL(file);
     }
-
+    
     async function logMealFromUpload(meal) {
       const fileInput = document.getElementById('img-' + meal);
       const customName = document.getElementById('food-upload-' + meal).value;
-      
+
       if (!fileInput.files[0]) {
         alert('Please upload an image first.');
         return;
@@ -390,57 +386,42 @@
       previewEl.innerHTML = '<div style="text-align:center;padding:20px;color:#888;">Analysing image... please wait</div>';
 
       try {
-        const configRes = await fetch(API + '/config', { // Get HF token from backend
-          headers: { 'Authorization': 'Bearer ' + token }
-        });
-        const config = await configRes.json();
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
 
-        const hf = new window.HfInference(config.hf_token);
-
-        const blob = fileInput.files[0];
-
-        const predictions = await hf.imageClassification({
-          model: 'nateraw/food',
-          data: blob
+        const res = await fetch(API + '/predict', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token },
+        body: formData
         });
 
-        console.log('Predictions:', predictions);
-
-        let foodName = 'Unknown food';
-        let confidence = 0;
-        let topLabel = 'unknown';
-
-        if (predictions && predictions.length > 0) {
-          topLabel = predictions[0].label;
-          confidence = Math.round(predictions[0].score * 100);
-          foodName = customName || topLabel.replace(/_/g, ' ');
+        if (!res.ok) {
+          const err = await res.text();
+          console.error('Predict error:', err);
+          throw new Error('Server error: ' + res.status);
         }
 
-        // Get nutrition from backend
-        const nutritionRes = await fetch(
-          `${API}/nutrition_search?query=${encodeURIComponent(topLabel)}`,
-          { headers: { 'Authorization': 'Bearer ' + token } }
-        );
-        const nutritionData = await nutritionRes.json();
+        const result = await res.json();
+        console.log('Prediction result:', result);
 
-        const calories = nutritionData.found ? nutritionData.calories : 200;
-        const protein  = nutritionData.found ? nutritionData.protein : 8;
-        const carbs    = nutritionData.found ? nutritionData.carbs : 25;
-        const fats     = nutritionData.found ? nutritionData.fats : 8;
+        const foodName = customName || result.top_prediction;
+        const confidence = result.confidence;
 
         switchTab(meal, 'manual');
         document.getElementById('food-' + meal).value = foodName;
-        document.getElementById('cal-input-' + meal).value = calories;
-        document.getElementById('protein-' + meal).value = protein;
-        document.getElementById('carbs-' + meal).value = carbs;
-        document.getElementById('fats-' + meal).value = fats;
+        document.getElementById('cal-input-' + meal).value = result.calories;
+        document.getElementById('protein-' + meal).value = result.protein;
+        document.getElementById('carbs-' + meal).value = result.carbs;
+        document.getElementById('fats-' + meal).value = result.fats;
 
-        showNutritionTag(meal, `${foodName} (${confidence}% confidence)`, calories, {
-          protein, carbs, fats
+        showNutritionTag(meal, `${foodName} (${confidence}% confidence)`, result.calories, {
+          protein: result.protein,
+          carbs: result.carbs,
+          fats: result.fats
         });
-
-      } catch (err) {
-        console.log('Image analysis failed:', err);
+        
+      }   catch (err) {
+        console.error('Image analysis failed:', err);
         alert('Could not analyse image. Please try again or type the food name manually.');
       }
     }

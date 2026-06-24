@@ -63,6 +63,8 @@ def predict_food(image_bytes: bytes):
     }
 
     try:
+        print(f"Calling HF API: {HF_API_URL}")
+        print(f"Token prefix: {HF_TOKEN[:10] if HF_TOKEN else 'EMPTY'}")
         response = requests.post(
             HF_API_URL,
             headers=headers,
@@ -71,7 +73,20 @@ def predict_food(image_bytes: bytes):
         )
 
         print("HF Status:", response.status_code)
-        print("HF Response:", response.text[:300])
+        print("HF Response:", response.text[:500])
+
+        if response.status_code == 503:
+            print("Model is loading, retrying in 10 seconds...")
+            import time
+            time.sleep(10)
+            response = requests.post(
+                HF_API_URL,
+                headers=headers,
+                data=image_bytes,
+                timeout=60
+            )
+            print("Retry HF Status:", response.status_code)
+            print("Retry HF Response:", response.text[:500])
 
         if response.status_code == 200:
             predictions = response.json()

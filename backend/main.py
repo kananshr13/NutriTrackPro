@@ -353,10 +353,3 @@ def delete_meal(
     db.commit()
     return {"message": "Meal deleted!"}
 
-@app.get("/config")
-def get_config(
-    current_user: models.User = Depends(auth.get_current_user)
-):
-    return {
-        "hf_token": os.getenv("HF_TOKEN", "")
-    }
