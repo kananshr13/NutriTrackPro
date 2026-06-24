@@ -1,10 +1,8 @@
-import requests
+import anthropic
+import base64
 import os
-from PIL import Image
-import io
 
-HF_API_URL = "https://api-inference.huggingface.co/models/nateraw/food"
-HF_TOKEN = os.getenv("HF_TOKEN", "")
+client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
 NUTRITION_DB = {
     "pizza": {"calories": 266, "protein": 11, "carbs": 33, "fats": 10},
@@ -39,6 +37,11 @@ NUTRITION_DB = {
     "apple_pie": {"calories": 237, "protein": 2, "carbs": 34, "fats": 11},
     "bibimbap": {"calories": 490, "protein": 22, "carbs": 66, "fats": 12},
     "tacos": {"calories": 226, "protein": 9, "carbs": 20, "fats": 12},
+    "dal": {"calories": 116, "protein": 9, "carbs": 20, "fats": 1},
+    "rice": {"calories": 130, "protein": 3, "carbs": 28, "fats": 0},
+    "roti": {"calories": 104, "protein": 3, "carbs": 18, "fats": 3},
+    "curry": {"calories": 150, "protein": 8, "carbs": 12, "fats": 8},
+    "biryani": {"calories": 290, "protein": 12, "carbs": 40, "fats": 9},
     "default": {"calories": 200, "protein": 8, "carbs": 25, "fats": 8}
 }
 
@@ -54,69 +57,57 @@ def get_nutrition(food_label: str):
 
 
 def predict_food(image_bytes: bytes):
-    """Sends image to HuggingFace Inference API using requests directly"""
-    print("HF token exists:", bool(HF_TOKEN))
-
-    headers = {
-        "Authorization": f"Bearer {HF_TOKEN}",
-        "Content-Type": "application/octet-stream"
-    }
+    """Sends image to Claude for food identification"""
+    print("Sending image to Claude for analysis...")
 
     try:
-        print(f"Calling HF API: {HF_API_URL}")
-        print(f"Token prefix: {HF_TOKEN[:10] if HF_TOKEN else 'EMPTY'}")
-        response = requests.post(
-            HF_API_URL,
-            headers=headers,
-            data=image_bytes,
-            timeout=60
+        image_b64 = base64.standard_b64encode(image_bytes).decode("utf-8")
+
+        message = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=200,
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image",
+                            "source": {
+                                "type": "base64",
+                                "media_type": "image/jpeg",
+                                "data": image_b64,
+                            },
+                        },
+                        {
+                            "type": "text",
+                            "text": "What food is in this image? Reply with ONLY the food name, nothing else. Use simple common names like 'pizza', 'burger', 'salad', 'rice', 'dal', 'roti', 'biryani', 'pasta' etc. If you cannot identify food, reply with 'unknown'."
+                        }
+                    ],
+                }
+            ],
         )
 
-        print("HF Status:", response.status_code)
-        print("HF Response:", response.text[:500])
+        food_name = message.content[0].text.strip().lower()
+        print(f"Claude identified: {food_name}")
 
-        if response.status_code == 503:
-            print("Model is loading, retrying in 10 seconds...")
-            import time
-            time.sleep(10)
-            response = requests.post(
-                HF_API_URL,
-                headers=headers,
-                data=image_bytes,
-                timeout=60
-            )
-            print("Retry HF Status:", response.status_code)
-            print("Retry HF Response:", response.text[:500])
+        nutrition = get_nutrition(food_name)
 
-        if response.status_code == 200:
-            predictions = response.json()
-
-            if isinstance(predictions, list) and len(predictions) > 0:
-                results = []
-                for pred in predictions[:3]:
-                    label = pred.get("label", "unknown")
-                    confidence = round(pred.get("score", 0) * 100, 1)
-                    nutrition = get_nutrition(label)
-                    results.append({
-                        "food": label.replace("_", " ").title(),
-                        "confidence": confidence,
-                        "calories": nutrition["calories"],
-                        "protein": nutrition["protein"],
-                        "carbs": nutrition["carbs"],
-                        "fats": nutrition["fats"]
-                    })
-                return results
-
-        print("Unexpected response from HF")
+        return [{
+            "food": food_name.replace("_", " ").title(),
+            "confidence": 95,
+            "calories": nutrition["calories"],
+            "protein": nutrition["protein"],
+            "carbs": nutrition["carbs"],
+            "fats": nutrition["fats"]
+        }]
 
     except Exception as e:
-        print(f"HuggingFace API error: {e}")
-
-    return [{
-        "food": "Unknown",
-        "confidence": 0,
-        "calories": 200,
-        "protein": 8,
-        "carbs": 25,
-        "fats": 8
-    }]
+        print(f"Claude API error: {e}")
+        return [{
+            "food": "Unknown",
+            "confidence": 0,
+            "calories": 200,
+            "protein": 8,
+            "carbs": 25,
+            "fats": 8
+        }]
