@@ -1,8 +1,9 @@
-import google.generativeai as genai
+from google import genai
 import os
+import PIL.Image
+import io
 
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-model = genai.GenerativeModel("gemini-1.5-flash")
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 NUTRITION_DB = {
     "pizza": {"calories": 266, "protein": 11, "carbs": 33, "fats": 10},
@@ -64,18 +65,18 @@ def predict_food(image_bytes: bytes):
     print("Sending image to Gemini for analysis...")
 
     try:
-        import PIL.Image
-        import io
-
         image = PIL.Image.open(io.BytesIO(image_bytes))
 
-        response = model.generate_content([
-            "What food is in this image? Reply with ONLY the food name, nothing else. "
-            "Use simple common names like 'pizza', 'burger', 'salad', 'rice', 'dal', "
-            "'roti', 'biryani', 'pasta', 'dosa', 'idli', 'paratha' etc. "
-            "If you cannot identify food, reply with 'unknown'.",
-            image
-        ])
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=[
+                "What food is in this image? Reply with ONLY the food name, nothing else. "
+                "Use simple common names like 'pizza', 'burger', 'salad', 'rice', 'dal', "
+                "'roti', 'biryani', 'pasta', 'dosa', 'idli', 'paratha' etc. "
+                "If you cannot identify food, reply with 'unknown'.",
+                image
+            ]
+        )
 
         food_name = response.text.strip().lower()
         print(f"Gemini identified: {food_name}")
