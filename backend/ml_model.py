@@ -1,8 +1,8 @@
-import anthropic
-import base64
+import google.generativeai as genai
 import os
 
-client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+model = genai.GenerativeModel("gemini-1.5-flash")
 
 NUTRITION_DB = {
     "pizza": {"calories": 266, "protein": 11, "carbs": 33, "fats": 10},
@@ -42,6 +42,9 @@ NUTRITION_DB = {
     "roti": {"calories": 104, "protein": 3, "carbs": 18, "fats": 3},
     "curry": {"calories": 150, "protein": 8, "carbs": 12, "fats": 8},
     "biryani": {"calories": 290, "protein": 12, "carbs": 40, "fats": 9},
+    "idli": {"calories": 58, "protein": 2, "carbs": 12, "fats": 0},
+    "dosa": {"calories": 168, "protein": 4, "carbs": 30, "fats": 4},
+    "paratha": {"calories": 260, "protein": 6, "carbs": 36, "fats": 10},
     "default": {"calories": 200, "protein": 8, "carbs": 25, "fats": 8}
 }
 
@@ -57,38 +60,25 @@ def get_nutrition(food_label: str):
 
 
 def predict_food(image_bytes: bytes):
-    """Sends image to Claude for food identification"""
-    print("Sending image to Claude for analysis...")
+    """Sends image to Gemini for food identification"""
+    print("Sending image to Gemini for analysis...")
 
     try:
-        image_b64 = base64.standard_b64encode(image_bytes).decode("utf-8")
+        import PIL.Image
+        import io
 
-        message = client.messages.create(
-            model="claude-haiku-4-5-20251001",
-            max_tokens=200,
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "image",
-                            "source": {
-                                "type": "base64",
-                                "media_type": "image/jpeg",
-                                "data": image_b64,
-                            },
-                        },
-                        {
-                            "type": "text",
-                            "text": "What food is in this image? Reply with ONLY the food name, nothing else. Use simple common names like 'pizza', 'burger', 'salad', 'rice', 'dal', 'roti', 'biryani', 'pasta' etc. If you cannot identify food, reply with 'unknown'."
-                        }
-                    ],
-                }
-            ],
-        )
+        image = PIL.Image.open(io.BytesIO(image_bytes))
 
-        food_name = message.content[0].text.strip().lower()
-        print(f"Claude identified: {food_name}")
+        response = model.generate_content([
+            "What food is in this image? Reply with ONLY the food name, nothing else. "
+            "Use simple common names like 'pizza', 'burger', 'salad', 'rice', 'dal', "
+            "'roti', 'biryani', 'pasta', 'dosa', 'idli', 'paratha' etc. "
+            "If you cannot identify food, reply with 'unknown'.",
+            image
+        ])
+
+        food_name = response.text.strip().lower()
+        print(f"Gemini identified: {food_name}")
 
         nutrition = get_nutrition(food_name)
 
@@ -102,7 +92,7 @@ def predict_food(image_bytes: bytes):
         }]
 
     except Exception as e:
-        print(f"Claude API error: {e}")
+        print(f"Gemini API error: {e}")
         return [{
             "food": "Unknown",
             "confidence": 0,
