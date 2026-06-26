@@ -68,7 +68,7 @@ def predict_food(image_bytes: bytes):
         image = PIL.Image.open(io.BytesIO(image_bytes))
 
         response = client.models.generate_content(
-            model="gemini-1.5-flash-latest",
+            model="gemini-1.5-flash",
             contents=[
                 "What food is in this image? Reply with ONLY the food name, nothing else. "
                 "Use simple common names like 'pizza', 'burger', 'salad', 'rice', 'dal', "
