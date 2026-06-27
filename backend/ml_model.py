@@ -1,9 +1,9 @@
-from google import genai
+import requests
 import os
-import PIL.Image
-import io
+import base64
 
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+ROBOFLOW_API_KEY = os.getenv("ROBOFLOW_API_KEY")
+MODEL_ID = "food-8ntvx-8e0kv/1"
 
 NUTRITION_DB = {
     "pizza": {"calories": 266, "protein": 11, "carbs": 33, "fats": 10},
@@ -61,44 +61,57 @@ def get_nutrition(food_label: str):
 
 
 def predict_food(image_bytes: bytes):
-    """Sends image to Gemini for food identification"""
-    print("Sending image to Gemini for analysis...")
+    """Sends image to Roboflow for food classification"""
+    print("Sending image to Roboflow for analysis...")
 
     try:
-        image = PIL.Image.open(io.BytesIO(image_bytes))
+        image_b64 = base64.b64encode(image_bytes).decode("utf-8")
 
-        response = client.models.generate_content(
-            model="gemini-1.5-flash-lite",
-            contents=[
-                "What food is in this image? Reply with ONLY the food name, nothing else. "
-                "Use simple common names like 'pizza', 'burger', 'salad', 'rice', 'dal', "
-                "'roti', 'biryani', 'pasta', 'dosa', 'idli', 'paratha' etc. "
-                "If you cannot identify food, reply with 'unknown'.",
-                image
-            ]
+        response = requests.post(
+            f"https://classify.roboflow.com/{MODEL_ID}",
+            params={"api_key": ROBOFLOW_API_KEY},
+            data=image_b64,
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            timeout=30
         )
 
-        food_name = response.text.strip().lower()
-        print(f"Gemini identified: {food_name}")
+        print("Roboflow status:", response.status_code)
+        print("Roboflow response:", response.text[:300])
 
-        nutrition = get_nutrition(food_name)
+        if response.status_code == 200:
+            data = response.json()
+            predictions = data.get("predictions", {})
 
-        return [{
-            "food": food_name.replace("_", " ").title(),
-            "confidence": 95,
-            "calories": nutrition["calories"],
-            "protein": nutrition["protein"],
-            "carbs": nutrition["carbs"],
-            "fats": nutrition["fats"]
-        }]
+            if predictions:
+                # Sort by confidence
+                sorted_preds = sorted(
+                    predictions.items(),
+                    key=lambda x: x[1]["confidence"],
+                    reverse=True
+                )
+
+                results = []
+                for label, pred in sorted_preds[:3]:
+                    confidence = round(pred["confidence"] * 100, 1)
+                    nutrition = get_nutrition(label)
+                    results.append({
+                        "food": label.replace("_", " ").title(),
+                        "confidence": confidence,
+                        "calories": nutrition["calories"],
+                        "protein": nutrition["protein"],
+                        "carbs": nutrition["carbs"],
+                        "fats": nutrition["fats"]
+                    })
+                return results
 
     except Exception as e:
-        print(f"Gemini API error: {e}")
-        return [{
-            "food": "Unknown",
-            "confidence": 0,
-            "calories": 200,
-            "protein": 8,
-            "carbs": 25,
-            "fats": 8
-        }]
+        print(f"Roboflow API error: {e}")
+
+    return [{
+        "food": "Unknown",
+        "confidence": 0,
+        "calories": 200,
+        "protein": 8,
+        "carbs": 25,
+        "fats": 8
+    }]
