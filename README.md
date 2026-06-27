@@ -63,7 +63,6 @@ A full-stack AI-powered nutrition tracking web application that helps users moni
 ---
 
 ## Architecture
-## Architecture
 
 1. **Frontend** (Vercel) — HTML/CSS/JS served statically
 2. **Backend** (Render) — FastAPI REST API
