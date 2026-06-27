@@ -321,7 +321,7 @@
 
     if (!token) window.location.href = 'auth.html';
 
-    document.getElementById('nav-username').textContent = username;
+
 
     let waterCount = 0;
     let calorieTarget = 2000;
@@ -567,6 +567,7 @@ function updatePortion(mealType) {
         const data = await res.json();
 
         if (data && data.daily_calorie_target) {
+          document.getElementById('nav-username').textContent = data.name;
           calorieTarget = data.daily_calorie_target;
           document.getElementById('calorie-target').textContent = calorieTarget;
           document.getElementById('calories-remaining').textContent = calorieTarget;
