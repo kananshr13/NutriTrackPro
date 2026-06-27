@@ -63,17 +63,13 @@ A full-stack AI-powered nutrition tracking web application that helps users moni
 ---
 
 ## Architecture
-User Browser
-     │
-     ▼
-Vercel (Frontend: HTML/CSS/JS)
-     │
-     ▼
-Render (FastAPI Backend)
-     │
-     ├──► PostgreSQL (user data, meal logs)
-     ├──► USDA FoodData Central API (nutrition search)
-     └──► Roboflow API (food image classification)
+## Architecture
+
+1. **Frontend** (Vercel) — HTML/CSS/JS served statically
+2. **Backend** (Render) — FastAPI REST API
+3. **Database** — PostgreSQL (user data, meal logs)
+4. **Nutrition Data** — USDA FoodData Central API
+5. **Food AI** — Roboflow ViT model (food image classification)
 ---
 
 ## API Endpoints
