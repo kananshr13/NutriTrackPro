@@ -1,4 +1,4 @@
-# NutriTrackPro 🥗
+# NutriTrackPro 
 
 A full-stack AI-powered nutrition tracking web application that helps users monitor their daily calorie intake, track macronutrients, and analyse food through image recognition.
 
