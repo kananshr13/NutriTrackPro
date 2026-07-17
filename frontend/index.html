@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>NutriTrackPro</title>
   <link rel="stylesheet" href="style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
 </head>
 <body>
 
@@ -75,12 +75,49 @@
   <section class="hero">
     <div class="hero-inner">
 
-      <h1 class="hero-title">Track Your Nutrition.<br/>Live Healthier.</h1>
-      <p class="hero-sub">Upload your meals, get instant calorie breakdowns,<br/>and reach your health goals — all powered by AI.</p>
+      <div class="hero-flex">
+        <div class="hero-copy">
+          <h1 class="hero-title">Track Your Nutrition.<br/>Live Healthier.</h1>
+          <p class="hero-sub">Upload your meals, get instant calorie breakdowns,<br/>and reach your health goals — all powered by AI.</p>
 
-      <div class="hero-buttons">
-        <a href="auth.html?mode=signup" class="btn-green large">Start for Free</a>
-        <a href="auth.html?mode=login" class="btn-outline large">I already have an account</a>
+          <div class="hero-buttons">
+            <a href="auth.html?mode=signup" class="btn-green large">Start for Free</a>
+            <a href="auth.html?mode=login" class="btn-outline large">I already have an account</a>
+          </div>
+        </div>
+
+        <div class="hero-visual" aria-hidden="true">
+          <div class="scan-frame">
+            <div class="scan-frame-inner">
+              <svg viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="160" cy="296" rx="118" ry="12" fill="#16211D" opacity="0.06"/>
+                <circle cx="160" cy="160" r="142" fill="#FFFFFF"/>
+                <circle cx="160" cy="160" r="142" fill="none" stroke="#EEE" stroke-width="2"/>
+                <ellipse cx="160" cy="182" rx="98" ry="58" fill="#F3D9A4"/>
+                <ellipse cx="118" cy="150" rx="34" ry="20" fill="#8FBF7F" transform="rotate(-18 118 150)"/>
+                <ellipse cx="176" cy="140" rx="30" ry="18" fill="#6FA85C" transform="rotate(10 176 140)"/>
+                <circle cx="205" cy="175" r="15" fill="#FF6B5E"/>
+                <circle cx="200" cy="170" r="4" fill="#FFFFFF" opacity="0.5"/>
+                <circle cx="120" cy="196" r="13" fill="#FF6B5E"/>
+                <ellipse cx="155" cy="205" rx="26" ry="16" fill="#FFF7E8" stroke="#F0E0C0" stroke-width="1.5"/>
+                <circle cx="155" cy="205" r="8" fill="#FFC857"/>
+                <circle cx="140" cy="160" r="4" fill="#3F7D4E"/>
+                <circle cx="190" cy="200" r="4" fill="#3F7D4E"/>
+                <circle cx="170" cy="215" r="3" fill="#3F7D4E"/>
+              </svg>
+              <div class="scan-line"></div>
+            </div>
+
+            <span class="corner corner-tl"></span>
+            <span class="corner corner-tr"></span>
+            <span class="corner corner-bl"></span>
+            <span class="corner corner-br"></span>
+
+            <div class="detect-tag tag-protein">Protein · 24g</div>
+            <div class="detect-tag tag-carbs">Carbs · 68g</div>
+            <div class="detect-tag tag-cal">375 kcal</div>
+          </div>
+        </div>
       </div>
 
       <!-- FEATURE CARDS -->
