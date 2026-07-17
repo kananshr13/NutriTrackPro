@@ -1,4 +1,8 @@
-
+/*
+  NutriTrackPro Stylesheet
+  Theme: Teal (#0F9D8C) primary, Coral (#FF6B5E) highlight, Green (var(--success)) success
+  Font: Inter throughout
+*/
 
 :root {
   --bg: #F4F7F6;
@@ -10,9 +14,11 @@
   --primary-tint: #E4F5F2;
   --highlight: #FF6B5E;
   --highlight-tint: #FFEEEC;
-  --success: var(--success);
-  --success-dark: var(--success-dark);
+  --success: #2DC653;
+  --success-dark: #22a845;
   --border: #E4E9E7;
+  --gold: #B8860B;
+  --gold-glow: #FFC857;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -55,10 +61,10 @@ a {
 }
 
 .brand-name {
-  font-family: 'Inter', sans-serif;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  font-size: 22px;
+  font-family: 'Fraunces', serif;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  font-size: 23px;
   color: var(--ink);
 }
 
@@ -138,11 +144,13 @@ a {
 }
 
 .hero-title {
+  font-family: 'Fraunces', serif;
   font-size: 52px;
-  font-weight: 800;
-  line-height: 1.2;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
   margin-bottom: 20px;
-  color: #1a1a1a;
+  color: var(--ink);
 }
 
 .hero-sub {
@@ -158,6 +166,134 @@ a {
   gap: 16px;
   margin-bottom: 72px;
   flex-wrap: wrap;
+}
+
+/* Two-column hero layout: copy left, AI-scan visual right */
+.hero-flex {
+  display: flex;
+  align-items: center;
+  gap: 56px;
+  text-align: left;
+  margin-bottom: 64px;
+}
+
+.hero-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.hero-copy .hero-buttons {
+  justify-content: flex-start;
+  margin-bottom: 0;
+}
+
+.hero-visual {
+  flex: 0 0 360px;
+  max-width: 360px;
+}
+
+/* --- Signature moment: AI scan/detect visual --- */
+.scan-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+}
+
+.scan-frame-inner {
+  position: absolute;
+  inset: 0;
+  border-radius: 28px;
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: 0 24px 60px rgba(22, 33, 29, 0.14);
+}
+
+.scan-frame-inner svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.scan-line {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  top: 8%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--gold-glow), transparent);
+  box-shadow: 0 0 14px 2px rgba(255, 200, 87, 0.65);
+  animation: scanSweep 3.4s ease-in-out infinite;
+}
+
+@keyframes scanSweep {
+  0%   { top: 8%;  opacity: 0; }
+  10%  { opacity: 1; }
+  50%  { top: 90%; opacity: 1; }
+  60%  { opacity: 0; }
+  100% { top: 8%;  opacity: 0; }
+}
+
+.corner {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  border: 3px solid var(--primary);
+  opacity: 0.9;
+}
+
+.corner-tl { top: 10px;    left: 10px;  border-right: none; border-bottom: none; border-radius: 8px 0 0 0; }
+.corner-tr { top: 10px;    right: 10px; border-left: none;  border-bottom: none; border-radius: 0 8px 0 0; }
+.corner-bl { bottom: 10px; left: 10px;  border-right: none; border-top: none;    border-radius: 0 0 0 8px; }
+.corner-br { bottom: 10px; right: 10px; border-left: none;  border-top: none;    border-radius: 0 0 8px 0; }
+
+.detect-tag {
+  position: absolute;
+  background: var(--surface);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 7px 14px;
+  border-radius: 20px;
+  box-shadow: 0 10px 24px rgba(22, 33, 29, 0.16);
+  opacity: 0;
+  transform: translateY(8px) scale(0.92);
+  animation: tagPop 3.4s ease-in-out infinite;
+  white-space: nowrap;
+}
+
+.tag-protein { top: 18px;    left: 18px;  color: var(--primary);   animation-delay: 1.2s; }
+.tag-carbs   { top: 46%;     right: 12px; color: var(--highlight); animation-delay: 1.7s; }
+.tag-cal     { bottom: 18px; left: 18px;  color: var(--gold);      animation-delay: 2.2s; }
+
+@keyframes tagPop {
+  0%, 32%  { opacity: 0; transform: translateY(8px) scale(0.92); }
+  40%, 82% { opacity: 1; transform: translateY(0) scale(1); }
+  92%, 100%{ opacity: 0; transform: translateY(8px) scale(0.92); }
+}
+
+@media (max-width: 860px) {
+  .hero-flex {
+    flex-direction: column;
+    text-align: center;
+  }
+  .hero-copy .hero-buttons {
+    justify-content: center;
+  }
+  .hero-visual {
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 300px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scan-line, .detect-tag {
+    animation: none !important;
+  }
+  .detect-tag {
+    opacity: 1;
+    transform: none;
+  }
+  .scan-line { display: none; }
 }
 
 /* FEATURE CARDS */
