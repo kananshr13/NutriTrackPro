@@ -22,7 +22,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-
+/**
+ * Animate a number counting up to a target value.
+ * Usage: countUp(document.getElementById('bmi-value'), 23.1)
+ * Call this instead of setting .textContent directly for dashboard stats.
+ */
 function countUp(el, target, opts = {}) {
   if (!el) return;
   const duration = opts.duration || 700;
