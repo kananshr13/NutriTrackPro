@@ -39,7 +39,7 @@
   <div class="dash-wrapper">
 
     <!-- SUMMARY BAR -->
-    <div class="summary-bar">
+    <div class="summary-bar reveal">
       <div class="summary-item">
         <div class="summary-label">Calorie Goal</div>
         <div class="summary-val" id="calorie-target">--</div>
@@ -82,7 +82,7 @@
     <div class="dash-grid">
 
       <!-- MEAL CARDS -->
-      <div class="meals-section">
+      <div class="meals-section reveal-group">
         <div class="section-title">Today's Meals</div>
 
         <!-- BREAKFAST -->
@@ -256,7 +256,7 @@
       </div>
 
       <!-- RIGHT STATS PANEL -->
-      <div class="stats-section">
+      <div class="stats-section reveal">
 
         <div class="stats-card">
           <div class="stats-title">Today's Macros</div>
@@ -569,13 +569,13 @@ function updatePortion(mealType) {
         if (data && data.daily_calorie_target) {
           document.getElementById('nav-username').textContent = data.name;
           calorieTarget = data.daily_calorie_target;
-          document.getElementById('calorie-target').textContent = calorieTarget;
-          document.getElementById('calories-remaining').textContent = calorieTarget;
+          countUp(document.getElementById('calorie-target'), calorieTarget, { decimals: 0 });
+          countUp(document.getElementById('calories-remaining'), calorieTarget, { decimals: 0 });
         }
         if (data && data.height_cm && data.weight_kg) {
           const h = data.height_cm / 100;
           const bmi = (data.weight_kg / (h * h)).toFixed(1);
-          document.getElementById('bmi-value').textContent = bmi;
+          countUp(document.getElementById('bmi-value'), parseFloat(bmi), { decimals: 1 });
           document.getElementById('bmi-label').textContent =
             bmi < 18.5 ? 'Underweight' : bmi < 25 ? 'Healthy' : bmi < 30 ? 'Overweight' : 'Obese';
         }
@@ -658,13 +658,13 @@ function updatePortion(mealType) {
           totalCal += typeCal;
         });
 
-        document.getElementById('calories-consumed').textContent = totalCal;
-        document.getElementById('calories-remaining').textContent = Math.max(calorieTarget - totalCal, 0);
+        countUp(document.getElementById('calories-consumed'), totalCal, { decimals: 0 });
+        countUp(document.getElementById('calories-remaining'), Math.max(calorieTarget - totalCal, 0), { decimals: 0 });
 
         const pct = Math.min((totalCal / calorieTarget) * 100, 100);
         const bar = document.getElementById('calorie-bar');
         bar.style.width = pct + '%';
-        bar.style.background = pct > 90 ? '#E63946' : '#2DC653';
+        bar.style.background = pct > 90 ? '#FF6B5E' : '#2DC653';
 
         updateMacroBars();
       } catch (err) {
@@ -722,5 +722,6 @@ function updatePortion(mealType) {
     }
   </script>
 
+  <script src="app.js" defer></script>
 </body>
 </html>

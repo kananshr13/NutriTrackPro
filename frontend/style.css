@@ -1,8 +1,20 @@
-/*
-  NutriTrackPro Stylesheet
-  Theme: Yellow (#F5C842), Red (#E63946), Green (#2DC653), White (#FFFFFF)
-  Font: Inter for body, italic bold for brand name
-*/
+
+
+:root {
+  --bg: #F4F7F6;
+  --surface: #FFFFFF;
+  --ink: #16211D;
+  --muted: #6B7570;
+  --primary: #0F9D8C;
+  --primary-dark: #0B7A6D;
+  --primary-tint: #E4F5F2;
+  --highlight: #FF6B5E;
+  --highlight-tint: #FFEEEC;
+  --success: var(--success);
+  --success-dark: var(--success-dark);
+  --border: #E4E9E7;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
 
 /* RESET */
 * {
@@ -13,10 +25,9 @@
 
 body {
   font-family: 'Inter', Arial, sans-serif;
-  background-color: #F5C842;
-  color: #1a1a1a;
+  background-color: var(--bg);
+  color: var(--ink);
   min-height: 100vh;
-  border: 6px solid #E63946;
 }
 
 a {
@@ -30,8 +41,11 @@ a {
   justify-content: space-between;
   align-items: center;
   padding: 16px 48px;
-  background: #F5C842;
-  border-bottom: 4px solid #E63946;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 20;
 }
 
 .logo {
@@ -41,11 +55,11 @@ a {
 }
 
 .brand-name {
-  font-family: Georgia, 'Times New Roman', serif;
-  font-style: italic;
-  font-weight: 700;
-  font-size: 26px;
-  color: #1a4fd6;
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-size: 22px;
+  color: var(--ink);
 }
 
 .nav-links {
@@ -61,12 +75,12 @@ a {
 }
 
 .nav-login:hover {
-  color: #E63946;
+  color: var(--primary);
 }
 
 /* BUTTONS */
 .btn-green {
-  background: #2DC653;
+  background: var(--success);
   color: white;
   padding: 10px 26px;
   border-radius: 50px;
@@ -74,11 +88,14 @@ a {
   font-size: 14px;
   border: none;
   cursor: pointer;
+  transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease), background 0.25s var(--ease);
   display: inline-block;
 }
 
 .btn-green:hover {
-  background: #22a845;
+  background: var(--success-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(45, 198, 83, 0.28);
 }
 
 .btn-green.large {
@@ -88,18 +105,20 @@ a {
 
 .btn-outline {
   background: white;
-  color: #E63946;
+  color: var(--primary);
   padding: 10px 26px;
   border-radius: 50px;
   font-weight: 700;
   font-size: 14px;
-  border: 2px solid #E63946;
+  border: 2px solid var(--primary);
   cursor: pointer;
+  transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease), background 0.25s var(--ease);
   display: inline-block;
 }
 
 .btn-outline:hover {
-  background: #ffeaea;
+  background: var(--primary-tint);
+  transform: translateY(-2px);
 }
 
 .btn-outline.large {
@@ -149,23 +168,26 @@ a {
 }
 
 .card {
-  background: white;
-  border: 3px solid #E63946;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 20px;
   padding: 32px 20px;
   text-align: center;
-  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(22, 33, 29, 0.04);
+  transition: transform 0.35s var(--ease), box-shadow 0.35s var(--ease), border-color 0.35s var(--ease);
 }
 
 .card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-6px);
+  border-color: var(--primary);
+  box-shadow: 0 16px 32px rgba(15, 157, 140, 0.14);
 }
 
 .card-title {
   font-size: 17px;
   font-weight: 700;
   margin-bottom: 12px;
-  color: #E63946;
+  color: var(--primary);
 }
 
 .card-body {
@@ -192,12 +214,13 @@ footer {
 }
 
 .auth-box {
-  background: white;
-  border: 3px solid #E63946;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 20px;
   padding: 40px;
   width: 100%;
   max-width: 440px;
+  box-shadow: 0 20px 48px rgba(22, 33, 29, 0.08);
 }
 
 .auth-tabs {
@@ -205,7 +228,7 @@ footer {
   margin-bottom: 28px;
   border-radius: 50px;
   overflow: hidden;
-  border: 2px solid #E63946;
+  border: 2px solid var(--primary);
 }
 
 .auth-tab {
@@ -216,11 +239,11 @@ footer {
   cursor: pointer;
   font-size: 15px;
   font-weight: 600;
-  color: #E63946;
+  color: var(--primary);
 }
 
 .auth-tab.active {
-  background: #E63946;
+  background: var(--primary);
   color: white;
 }
 
@@ -257,7 +280,7 @@ footer {
 }
 
 .auth-box input:focus {
-  border-color: #F5C842;
+  border-color: var(--primary);
 }
 
 .btn-green.full {
@@ -269,7 +292,7 @@ footer {
 }
 
 .error-msg {
-  color: #E63946;
+  color: #D64545;
   font-size: 13px;
   margin-bottom: 8px;
   min-height: 18px;
@@ -284,11 +307,12 @@ footer {
 }
 
 .onboard-box {
-  background: white;
-  border: 3px solid #E63946;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 20px;
   padding: 44px;
   width: 100%;
+  box-shadow: 0 20px 48px rgba(22, 33, 29, 0.08);
   max-width: 520px;
 }
 
@@ -316,8 +340,8 @@ footer {
 }
 
 .progress-step.active {
-  background: #E63946;
-  border-color: #E63946;
+  background: var(--primary);
+  border-color: var(--primary);
 }
 
 .progress-line {
@@ -344,13 +368,13 @@ footer {
 }
 
 .option-card:hover {
-  border-color: #F5C842;
-  background: #fffdf0;
+  border-color: var(--primary);
+  background: var(--primary-tint);
 }
 
 .option-card.selected {
-  border-color: #E63946;
-  background: #fff5f5;
+  border-color: var(--primary);
+  background: var(--primary-tint);
 }
 
 .option-title {
@@ -385,8 +409,8 @@ footer {
 }
 
 .btn-outline-sm:hover {
-  border-color: #E63946;
-  color: #E63946;
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 /* Onboarding inputs reuse auth styles */
@@ -410,7 +434,7 @@ footer {
 }
 
 .onboard-box input:focus {
-  border-color: #F5C842;
+  border-color: var(--primary);
 }
 /* DASHBOARD WRAPPER */
 .dash-wrapper {
@@ -421,9 +445,10 @@ footer {
 
 /* SUMMARY BAR */
 .summary-bar {
-  background: white;
-  border: 2px solid #E63946;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(22, 33, 29, 0.04);
   display: flex;
   align-items: center;
   justify-content: space-around;
@@ -440,7 +465,7 @@ footer {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: #E63946;
+  color: var(--primary);
   margin-bottom: 4px;
 }
 
@@ -464,7 +489,7 @@ footer {
 }
 
 .water-btn {
-  background: #2DC653;
+  background: var(--success);
   color: white;
   border: none;
   border-radius: 20px;
@@ -486,7 +511,7 @@ footer {
 .cal-progress-fill {
   height: 100%;
   border-radius: 50px;
-  background: #2DC653;
+  background: var(--success);
   width: 0%;
   transition: width 0.5s ease;
 }
@@ -506,7 +531,7 @@ footer {
   color: #1a1a1a;
   margin-bottom: 16px;
   padding-left: 12px;
-  border-left: 4px solid #E63946;
+  border-left: 4px solid var(--primary);
 }
 
 /* MEAL CARDS */
@@ -541,8 +566,8 @@ footer {
   width: 40px;
   height: 40px;
   border-radius: 12px;
-  background: #fde8ea;
-  color: #E63946;
+  background: var(--primary-tint);
+  color: var(--primary);
   font-weight: 800;
   font-size: 16px;
   display: flex;
@@ -564,7 +589,7 @@ footer {
 .meal-total {
   font-weight: 700;
   font-size: 15px;
-  color: #E63946;
+  color: var(--highlight);
 }
 
 /* LOGGED ITEMS */
@@ -593,7 +618,7 @@ footer {
 
 .log-kcal {
   font-weight: 700;
-  color: #E63946;
+  color: var(--highlight);
   white-space: nowrap;
 }
 
@@ -621,9 +646,9 @@ footer {
 }
 
 .add-tab.active {
-  background: #F5C842;
-  border-color: #F5C842;
-  color: #1a1a1a;
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
 }
 
 .meal-add input[type="text"],
@@ -640,7 +665,7 @@ footer {
 }
 
 .meal-add input:focus {
-  border-color: #F5C842;
+  border-color: var(--primary);
 }
 
 .macro-inputs {
@@ -656,7 +681,7 @@ footer {
 .log-btn {
   width: 100%;
   padding: 10px;
-  background: #2DC653;
+  background: var(--success);
   color: white;
   border: none;
   border-radius: 8px;
@@ -667,12 +692,12 @@ footer {
 }
 
 .log-btn:hover {
-  background: #22a845;
+  background: var(--success-dark);
 }
 
 /* UPLOAD BOX */
 .upload-box {
-  border: 2px dashed #F5C842;
+  border: 2px dashed var(--primary);
   border-radius: 10px;
   cursor: pointer;
   overflow: hidden;
@@ -692,12 +717,12 @@ footer {
 /* SUGGESTION BOX */
 .suggestion-box {
   margin-top: 10px;
-  background: #fff5f5;
-  border-left: 3px solid #E63946;
+  background: var(--primary-tint);
+  border-left: 3px solid var(--primary);
   border-radius: 6px;
   padding: 10px 14px;
   font-size: 13px;
-  color: #E63946;
+  color: var(--primary);
 }
 
 /* STATS PANEL */
@@ -753,9 +778,9 @@ footer {
   transition: width 0.4s;
 }
 
-.protein-bar { background: #E63946; }
-.carbs-bar   { background: #F5C842; }
-.fats-bar    { background: #2DC653; }
+.protein-bar { background: var(--primary); }
+.carbs-bar   { background: var(--highlight); }
+.fats-bar    { background: var(--success); }
 
 .macro-grams {
   font-size: 12px;
@@ -806,15 +831,15 @@ footer {
 }
 
 .gender-btn.active {
-  border-color: #E63946;
-  background: #fff5f5;
-  color: #E63946;
+  border-color: var(--primary);
+  background: var(--primary-tint);
+  color: var(--primary);
 }
 
 /* NUTRITION AUTO-FILL TAG */
 .nutrition-tag {
   background: #f0fff4;
-  border: 1px solid #2DC653;
+  border: 1px solid var(--success);
   border-radius: 6px;
   padding: 6px 12px;
   font-size: 12px;
@@ -829,11 +854,12 @@ footer {
 }
 
 .profile-box {
-  background: white;
-  border: 2px solid #E63946;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 20px;
   padding: 40px;
   width: 100%;
+  box-shadow: 0 20px 48px rgba(22, 33, 29, 0.08);
   max-width: 520px;
 }
 
@@ -848,7 +874,7 @@ footer {
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: #E63946;
+  background: var(--primary);
   color: white;
   font-size: 28px;
   font-weight: 800;
@@ -875,8 +901,8 @@ footer {
 }
 
 .profile-stat {
-  background: #fffdf0;
-  border: 2px solid #F5C842;
+  background: var(--primary-tint);
+  border: 2px solid var(--primary);
   border-radius: 12px;
   padding: 16px;
   text-align: center;
@@ -892,7 +918,7 @@ footer {
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  color: #E63946;
+  color: var(--primary);
   margin-top: 4px;
 }
 
@@ -937,7 +963,7 @@ footer {
 
 .profile-box input:focus,
 .profile-box select:focus {
-  border-color: #F5C842;
+  border-color: var(--primary);
 }
 
 .save-msg {
@@ -950,7 +976,7 @@ footer {
 /* NUTRITION TAG */
 .nutrition-tag {
   background: #f0fff4;
-  border: 1px solid #2DC653;
+  border: 1px solid var(--success);
   border-radius: 6px;
   padding: 6px 12px;
   font-size: 12px;
@@ -962,7 +988,7 @@ footer {
 .delete-btn {
   background: none;
   border: none;
-  color: #E63946;
+  color: var(--primary);
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
@@ -979,8 +1005,8 @@ footer {
 /* PORTION SELECTOR */
 .portion-selector {
   margin-bottom: 10px;
-  background: #fffdf0;
-  border: 1px solid #F5C842;
+  background: var(--primary-tint);
+  border: 1px solid var(--primary);
   border-radius: 8px;
   padding: 10px 12px;
 }
@@ -1004,12 +1030,66 @@ footer {
 }
 
 .portion-options select:focus {
-  border-color: #F5C842;
+  border-color: var(--primary);
 }
 
 .portion-result {
   font-size: 12px;
   font-weight: 600;
-  color: #2DC653;
+  color: var(--success);
   margin-top: 8px;
+}
+
+/* ============================================
+   MOTION SYSTEM
+   Page-load entrance + scroll reveals + micro-interactions
+   ============================================ */
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Hero elements animate in on load, staggered */
+.hero-title,
+.hero-sub,
+.hero-buttons {
+  opacity: 0;
+  animation: fadeUp 0.7s var(--ease) forwards;
+}
+
+.hero-title  { animation-delay: 0.05s; }
+.hero-sub    { animation-delay: 0.15s; }
+.hero-buttons{ animation-delay: 0.25s; }
+
+/* Scroll-reveal: JS toggles .in-view when element enters viewport */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s var(--ease), transform 0.6s var(--ease);
+}
+
+.reveal.in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger children of a revealed group (feature cards, meal cards, etc.) */
+.reveal-group.in-view > * {
+  animation: fadeUp 0.6s var(--ease) both;
+}
+
+.reveal-group.in-view > *:nth-child(1) { animation-delay: 0s; }
+.reveal-group.in-view > *:nth-child(2) { animation-delay: 0.08s; }
+.reveal-group.in-view > *:nth-child(3) { animation-delay: 0.16s; }
+.reveal-group.in-view > *:nth-child(4) { animation-delay: 0.24s; }
+
+/* Respect users who've asked for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .hero-title, .hero-sub, .hero-buttons, .reveal, .reveal-group > * {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
