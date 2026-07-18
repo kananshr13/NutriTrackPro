@@ -13,6 +13,8 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
+    is_verified = Column(String, default="no")           # "yes" / "no"
+    verification_token = Column(String, nullable=True)
 
     profile = relationship("UserProfile", back_populates="owner", uselist=False)
     meals = relationship("MealLog", back_populates="owner")
