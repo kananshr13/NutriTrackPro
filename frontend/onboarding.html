@@ -105,13 +105,21 @@
         <p class="form-sub">We will tailor your daily meal suggestions to match this</p>
 
         <div class="option-cards">
-          <div class="option-card" id="opt-track" onclick="selectGoal('track_nutrition')">
-            <div class="option-title">Track Nutrition</div>
-            <div class="option-desc">I want to monitor what I eat and stay informed</div>
+          <div class="option-card" id="opt-maintain_weight" onclick="selectGoal('maintain_weight')">
+            <div class="option-title">Maintain Weight</div>
+            <div class="option-desc">Stay around where I am, just track consistently</div>
           </div>
-          <div class="option-card" id="opt-improve" onclick="selectGoal('improve_health')">
-            <div class="option-title">Improve Health</div>
-            <div class="option-desc">I want to eat healthier and reach a calorie target</div>
+          <div class="option-card" id="opt-lose_weight" onclick="selectGoal('lose_weight')">
+            <div class="option-title">Lose Weight</div>
+            <div class="option-desc">Moderate, sustainable calorie deficit</div>
+          </div>
+          <div class="option-card" id="opt-gain_weight" onclick="selectGoal('gain_weight')">
+            <div class="option-title">Gain Weight</div>
+            <div class="option-desc">Build up with a modest calorie surplus</div>
+          </div>
+          <div class="option-card" id="opt-improve_health" onclick="selectGoal('improve_health')">
+            <div class="option-title">General Health &amp; Wellness</div>
+            <div class="option-desc">Eat better overall without a strict weight target</div>
           </div>
         </div>
 
@@ -168,10 +176,8 @@
     }
 
     function selectGoal(goal) {
-      document.getElementById('opt-track').classList.remove('selected');
-      document.getElementById('opt-improve').classList.remove('selected');
-      if (goal === 'track_nutrition') document.getElementById('opt-track').classList.add('selected');
-      if (goal === 'improve_health') document.getElementById('opt-improve').classList.add('selected');
+      document.querySelectorAll('#step-3 .option-card').forEach(c => c.classList.remove('selected'));
+      document.getElementById('opt-' + goal).classList.add('selected');
       profile.goal = goal;
     }
 
