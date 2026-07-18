@@ -307,6 +307,14 @@
           </div>
         </div>
 
+        <div class="stats-card" id="suggest-card">
+          <div class="stats-title">AI Suggestions</div>
+          <p id="suggest-text" style="font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 10px;">
+            Log a meal and I'll let you know if anything's worth swapping out.
+          </p>
+          <button class="btn-outline-sm" onclick="getSuggestion()" id="suggest-btn">Get Suggestions</button>
+        </div>
+
       </div>
     </div>
   </div>
@@ -506,6 +514,9 @@
           <option value="200">Small Plate (~200g)</option>
           <option value="350">Full Plate (~350g)</option>
           </optgroup>
+          <optgroup label="Quantity">
+          <option value="quantity">By Quantity (count)</option>
+          </optgroup>
           <optgroup label="Pieces / Units">
           <option value="custom">Custom (enter grams)</option>
           </optgroup>
@@ -514,6 +525,12 @@
           placeholder="Enter grams"
           style="display:none; margin-top:8px;"
           oninput="updatePortion('${mealType}')" />
+        <div id="quantity-row-${mealType}" style="display:none; margin-top:8px; align-items:center; gap:8px;">
+          <input type="number" id="quantity-count-${mealType}"
+            value="1" min="1" step="1" style="width:80px;"
+            oninput="updatePortion('${mealType}')" />
+          <span style="font-size:13px; color:var(--muted);">× standard servings (100g each)</span>
+        </div>
     </div>
     <div class="portion-result" id="portion-result-${mealType}">
       Showing values for 100g
@@ -528,18 +545,29 @@
 function updatePortion(mealType) {
   const select = document.getElementById('portion-type-' + mealType);
   const customInput = document.getElementById('custom-grams-' + mealType);
+  const quantityRow = document.getElementById('quantity-row-' + mealType);
+  const quantityInput = document.getElementById('quantity-count-' + mealType);
   const resultEl = document.getElementById('portion-result-' + mealType);
   const base = window['baseMacros_' + mealType];
 
   if (!base) return;
 
   let grams = 100;
+  let quantityLabel = null;
 
   if (select.value === 'custom') {
     customInput.style.display = 'block';
+    quantityRow.style.display = 'none';
     grams = parseFloat(customInput.value) || 100;
+  } else if (select.value === 'quantity') {
+    customInput.style.display = 'none';
+    quantityRow.style.display = 'flex';
+    const count = parseFloat(quantityInput.value) || 1;
+    grams = 100 * count;
+    quantityLabel = `${count} × standard serving`;
   } else {
     customInput.style.display = 'none';
+    quantityRow.style.display = 'none';
     grams = parseFloat(select.value);
   }
 
@@ -556,8 +584,28 @@ function updatePortion(mealType) {
   document.getElementById('carbs-' + mealType).value = carbs;
   document.getElementById('fats-' + mealType).value = fats;
 
-  resultEl.textContent = `${grams}g → ${calories} kcal · ${protein}g P · ${carbs}g C · ${fats}g F`;
+  resultEl.textContent = quantityLabel
+    ? `${quantityLabel} (${grams}g) → ${calories} kcal · ${protein}g P · ${carbs}g C · ${fats}g F`
+    : `${grams}g → ${calories} kcal · ${protein}g P · ${carbs}g C · ${fats}g F`;
 }
+
+    async function getSuggestion() {
+      const btn = document.getElementById('suggest-btn');
+      const textEl = document.getElementById('suggest-text');
+      btn.disabled = true;
+      btn.textContent = 'Thinking...';
+      try {
+        const res = await fetch(API + '/suggest', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const data = await res.json();
+        textEl.textContent = data.suggestion || 'No suggestions right now.';
+      } catch (err) {
+        textEl.textContent = 'Could not reach suggestions right now.';
+      }
+      btn.disabled = false;
+      btn.textContent = 'Get Suggestions';
+    }
 
     async function loadProfile() {
       try {
