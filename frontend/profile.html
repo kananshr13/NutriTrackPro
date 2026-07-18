@@ -97,8 +97,10 @@
 
       <label>Goal</label>
       <select id="edit-goal">
-        <option value="track_nutrition">Track Nutrition</option>
-        <option value="improve_health">Improve Health</option>
+        <option value="maintain_weight">Maintain Weight</option>
+        <option value="lose_weight">Lose Weight</option>
+        <option value="gain_weight">Gain Weight</option>
+        <option value="improve_health">General Health &amp; Wellness</option>
       </select>
 
       <p id="save-msg" class="save-msg"></p>
@@ -147,7 +149,9 @@
         document.getElementById('profile-avatar').textContent = (data.name || username)[0].toUpperCase();
         document.getElementById('p-calories').textContent = data.daily_calorie_target || '--';
         document.getElementById('p-goal').textContent =
-          data.goal === 'improve_health' ? 'Improve Health' : 'Track Nutrition';
+          ({ lose_weight: 'Lose Weight', gain_weight: 'Gain Weight',
+             improve_health: 'General Health', maintain_weight: 'Maintain Weight' })
+          [data.goal] || 'Maintain Weight';
 
         if (data.height_cm && data.weight_kg) {
           const h = data.height_cm / 100;
@@ -163,7 +167,7 @@
         document.getElementById('edit-height').value = data.height_cm || '';
         document.getElementById('edit-weight').value = data.weight_kg || '';
         document.getElementById('edit-activity').value = data.activity_level || 'sometimes';
-        document.getElementById('edit-goal').value = data.goal || 'track_nutrition';
+        document.getElementById('edit-goal').value = data.goal || 'maintain_weight';
 
         selectedGender = data.gender || 'male';
         selectGender(selectedGender);
