@@ -126,7 +126,7 @@
           // After signup, go to login tab
           showLogin();
           document.getElementById('login-error').textContent = '';
-          alert('Account created! Please login.');
+          alert(data.message || 'Account created! Please check your email to verify your account before logging in.');
         } else {
           errorEl.textContent = data.detail || 'Signup failed.';
         }
