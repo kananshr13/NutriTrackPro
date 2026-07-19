@@ -296,6 +296,61 @@ a {
   .scan-line { display: none; }
 }
 
+/* --- Goal-reached popup --- */
+.goal-popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(22, 33, 29, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s var(--ease);
+}
+
+.goal-popup-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.goal-popup {
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 36px 32px;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 30px 70px rgba(22, 33, 29, 0.25);
+  transform: scale(0.92) translateY(10px);
+  transition: transform 0.3s var(--ease);
+}
+
+.goal-popup-overlay.active .goal-popup {
+  transform: scale(1) translateY(0);
+}
+
+.goal-popup-icon {
+  font-size: 40px;
+  margin-bottom: 8px;
+}
+
+.goal-popup-title {
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--ink);
+}
+
+.goal-popup-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin-bottom: 24px;
+}
+
 /* FEATURE CARDS */
 .cards-grid {
   display: grid;
