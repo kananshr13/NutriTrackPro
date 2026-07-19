@@ -281,6 +281,27 @@ def get_profile(
     return profile
 
 
+# Recommended calorie ranges per meal type, matching what's shown in the UI
+MEAL_CALORIE_RANGES = {
+    "breakfast": (400, 600),
+    "lunch":     (500, 700),
+    "snacks":    (100, 300),
+    "dinner":    (400, 600),
+}
+
+def flag_meal(meal_type: str, food_name: str, calories: float):
+    """Returns (is_healthy, alternative) using meal-specific ranges instead
+    of one flat threshold, and names the actual food in the suggestion."""
+    low, high = MEAL_CALORIE_RANGES.get(meal_type, (0, 600))
+    if calories <= high:
+        return "yes", None
+    over_by = round(calories - high)
+    alt = (f"Your {food_name} ({round(calories)} kcal) ran about {over_by} kcal over "
+           f"the typical range for {meal_type}. A lighter swap next time — "
+           f"like grilled protein with vegetables or a lentil/grain bowl — would help balance it out.")
+    return "no", alt
+
+
 # MEAL ROUTES
 @app.post("/log_meal")
 def log_meal(
@@ -288,10 +309,7 @@ def log_meal(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(auth.get_current_user)
 ):
-    is_healthy = "yes" if meal.calories < 600 else "no"
-    alternative = None
-    if is_healthy == "no":
-        alternative = "Consider a lighter option like grilled chicken with vegetables or a grain bowl."
+    is_healthy, alternative = flag_meal(meal.meal_type, meal.food_name, meal.calories)
 
     entry = models.MealLog(
         user_id=current_user.id,
@@ -313,16 +331,26 @@ def log_meal(
         "alternative": alternative
     }
 
+GOAL_REACHED_MESSAGES = {
+    "lose_weight": "You've hit your calorie goal for today — nice work staying on track. If you're still hungry, water, herbal tea, or a small handful of nuts is a good way to round out the evening without overshooting.",
+    "gain_weight": "You've reached today's calorie target — great job fueling your goal to gain weight! Keep this consistency up tomorrow.",
+    "maintain_weight": "You've hit your daily calorie goal — a solid, balanced day. No need to log more unless you're genuinely still hungry.",
+    "improve_health": "You've reached your calorie target for today. Nice, consistent eating — keep listening to your hunger cues for the rest of the day.",
+}
+
 @app.get("/suggest")
 def suggest_healthier_choices(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(auth.get_current_user)
 ):
     """
-    Looks at what the user has eaten today and, if the pattern looks
-    heavy on low-nutrient/high-calorie food, asks an LLM for 2-3 short,
-    practical swaps. Falls back to a plain rule-based tip if no
-    GROQ_API_KEY is configured, so the app still works without it.
+    Looks at what the user has eaten today against their actual goal and
+    calorie target, and either:
+      - tells them they've hit their goal for the day, or
+      - names the specific meal(s) that ran high and suggests a swap
+        tailored to their goal, via an LLM if configured.
+    Falls back to a specific (not generic) rule-based message if no
+    GROQ_API_KEY is set, so the app still works without it.
     """
     from datetime import datetime, timedelta
 
@@ -337,17 +365,37 @@ def suggest_healthier_choices(
     if not meals:
         return {"suggestion": "No meals logged yet today — once you log something, I can suggest swaps if needed."}
 
-    total_calories = sum(m.calories for m in meals)
-    junk_count = sum(1 for m in meals if m.is_healthy == "no")
-    meal_list = "; ".join(f"{m.meal_type}: {m.food_name} ({m.calories} kcal)" for m in meals)
+    profile = db.query(models.UserProfile).filter(
+        models.UserProfile.user_id == current_user.id
+    ).first()
+    goal = profile.goal if profile else "maintain_weight"
+    calorie_target = profile.daily_calorie_target if (profile and profile.daily_calorie_target) else 2000
 
-    # Only bother calling the LLM if there's actually something to flag
-    if junk_count == 0:
-        return {"suggestion": "Today's meals look reasonably balanced — nothing to flag right now. Keep it up!"}
+    total_calories = sum(m.calories for m in meals)
+    flagged = [m for m in meals if m.is_healthy == "no"]
+
+    # Goal reached takes priority over swap suggestions
+    if total_calories >= calorie_target:
+        return {"suggestion": GOAL_REACHED_MESSAGES.get(goal, GOAL_REACHED_MESSAGES["maintain_weight"])}
+
+    meal_list = "; ".join(f"{m.meal_type}: {m.food_name} ({round(m.calories)} kcal)" for m in meals)
+
+    if not flagged:
+        remaining = round(calorie_target - total_calories)
+        return {"suggestion": f"Today's meals look reasonably balanced — nothing to flag right now. You have about {remaining} kcal left toward your goal. Keep it up!"}
+
+    flagged_list = "; ".join(f"{m.meal_type} ({m.food_name}, {round(m.calories)} kcal)" for m in flagged)
 
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
-        return {"suggestion": f"You've logged {junk_count} higher-calorie meal(s) today. Consider adding a lighter, protein-forward meal (e.g. grilled chicken with vegetables, or a lentil bowl) for your next one."}
+        # Specific, not generic: names the actual meal(s) and ties advice to the goal
+        names = ", ".join(f"{m.meal_type} ({m.food_name})" for m in flagged)
+        goal_hint = {
+            "lose_weight": "since you're working toward a calorie deficit, ",
+            "gain_weight": "since you're working on a calorie surplus, lean toward nutrient-dense rather than empty-calorie additions — ",
+            "improve_health": "for general balance, ",
+        }.get(goal, "")
+        return {"suggestion": f"Your {names} ran higher than the typical range. {goal_hint}consider a lighter, protein-forward option next — like grilled chicken with vegetables or a lentil bowl."}
 
     try:
         res = http_requests.post(
@@ -360,15 +408,20 @@ def suggest_healthier_choices(
                         "role": "system",
                         "content": (
                             "You are a supportive nutrition assistant inside a food-tracking app. "
-                            "Given a user's logged meals for today, give 2-3 short, specific, "
-                            "encouraging suggestions for healthier swaps or additions for their "
-                            "next meal. Keep it under 60 words, no medical claims, no calorie "
-                            "targets or restrictive language, just practical and kind."
+                            "The user has one or more meals today that ran higher than the typical "
+                            "calorie range for that meal type. Reference the specific meal(s) by name "
+                            "and give 2-3 short, specific, encouraging suggestions for what to swap or "
+                            "add next, tailored to the user's stated goal. Keep it under 70 words, no "
+                            "medical claims, no specific calorie targets, just practical and kind."
                         )
                     },
                     {
                         "role": "user",
-                        "content": f"Today's meals so far ({total_calories} kcal total): {meal_list}"
+                        "content": (
+                            f"Goal: {goal}. Daily calorie target: {calorie_target}. "
+                            f"Meals so far today ({round(total_calories)} kcal total): {meal_list}. "
+                            f"Meals that ran higher than typical for their type: {flagged_list}."
+                        )
                     }
                 ],
                 "max_tokens": 150,
@@ -380,7 +433,8 @@ def suggest_healthier_choices(
         suggestion = data["choices"][0]["message"]["content"].strip()
         return {"suggestion": suggestion}
     except Exception as e:
-        return {"suggestion": f"You've logged {junk_count} higher-calorie meal(s) today. Consider a lighter, protein-forward option for your next meal.", "error": str(e)}
+        names = ", ".join(f"{m.meal_type} ({m.food_name})" for m in flagged)
+        return {"suggestion": f"Your {names} ran higher than the typical range. Consider a lighter, protein-forward option for your next meal.", "error": str(e)}
 
 
 @app.get("/today_meals")
