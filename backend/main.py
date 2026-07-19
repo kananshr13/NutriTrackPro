@@ -11,47 +11,58 @@ import auth
 import os 
 import re
 import secrets
-import smtplib
-from email.mime.text import MIMEText
 import requests as http_requests
 
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 def send_verification_email(to_email: str, username: str, token: str):
     """
-    Sends a real verification email via SMTP. Requires these env vars:
-    SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM, BACKEND_URL
-    (e.g. Gmail: smtp.gmail.com / 587 / your address / an App Password)
-    If SMTP isn't configured, this silently no-ops so local dev still works
-    — the account just stays unverified until it's set up.
-    """
-    smtp_host = os.getenv("SMTP_HOST")
-    smtp_user = os.getenv("SMTP_USER")
-    smtp_password = os.getenv("SMTP_PASSWORD")
-    smtp_from = os.getenv("SMTP_FROM", smtp_user)
-    backend_url = os.getenv("BACKEND_URL", "http://localhost:8000")
+    Sends a real verification email via SendGrid's HTTP API.
+    Render's free tier blocks outbound SMTP ports (25/465/587) entirely,
+    so raw smtplib cannot work there — HTTPS API calls aren't blocked.
 
-    if not all([smtp_host, smtp_user, smtp_password]):
-        print(f"[email] SMTP not configured — skipping send. Verify link: {backend_url}/verify_email?token={token}")
+    Requires these env vars:
+      SENDGRID_API_KEY   - from app.sendgrid.com > Settings > API Keys
+      SENDGRID_FROM_EMAIL - the address you verified via Single Sender
+                             Verification (Settings > Sender Authentication)
+      BACKEND_URL        - your deployed backend URL
+
+    If not configured, this silently no-ops and logs the verification
+    link instead, so local dev / testing still works without email set up.
+    """
+    api_key = os.getenv("SENDGRID_API_KEY")
+    from_email = os.getenv("SENDGRID_FROM_EMAIL")
+    backend_url = os.getenv("BACKEND_URL", "http://localhost:8000")
+    verify_link = f"{backend_url}/verify_email?token={token}"
+
+    if not all([api_key, from_email]):
+        print(f"[email] SendGrid not configured — skipping send. Verify link: {verify_link}")
         return
 
-    verify_link = f"{backend_url}/verify_email?token={token}"
     body = (
         f"Hi {username},\n\n"
         f"Welcome to NutriTrackPro! Please verify your email address by clicking the link below:\n\n"
         f"{verify_link}\n\n"
         f"If you didn't create this account, you can ignore this email.\n"
     )
-    msg = MIMEText(body)
-    msg["Subject"] = "Verify your NutriTrackPro account"
-    msg["From"] = smtp_from
-    msg["To"] = to_email
 
-    smtp_port = int(os.getenv("SMTP_PORT", "587"))
-    with smtplib.SMTP(smtp_host, smtp_port) as server:
-        server.starttls()
-        server.login(smtp_user, smtp_password)
-        server.sendmail(smtp_from, [to_email], msg.as_string())
+    res = http_requests.post(
+        "https://api.sendgrid.com/v3/mail/send",
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        },
+        json={
+            "personalizations": [{"to": [{"email": to_email}]}],
+            "from": {"email": from_email, "name": "NutriTrackPro"},
+            "subject": "Verify your NutriTrackPro account",
+            "content": [{"type": "text/plain", "value": body}]
+        },
+        timeout=10
+    )
+    if res.status_code >= 300:
+        print(f"[email] SendGrid send failed ({res.status_code}): {res.text}")
+        raise Exception(f"SendGrid error {res.status_code}: {res.text}")
 
 app = FastAPI(title="NutriTrackPro API")
 
@@ -172,7 +183,9 @@ def signup(user: UserCreate, db: Session = Depends(get_db)):
     try:
         send_verification_email(user.email, user.username, token)
     except Exception as e:
+        backend_url = os.getenv("BACKEND_URL", "http://localhost:8000")
         print(f"[email] Failed to send verification email: {e}")
+        print(f"[email] Manual verify link for {user.email}: {backend_url}/verify_email?token={token}")
 
     return {
         "message": "Account created! Please check your email to verify your account before logging in.",
