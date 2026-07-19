@@ -589,6 +589,35 @@ function updatePortion(mealType) {
     : `${grams}g → ${calories} kcal · ${protein}g P · ${carbs}g C · ${fats}g F`;
 }
 
+    async function checkGoalReached(totalCal, calorieTarget) {
+      if (totalCal < calorieTarget) return;
+
+      const todayKey = 'goalPopupShown_' + new Date().toISOString().slice(0, 10);
+      if (sessionStorage.getItem(todayKey)) return; // already shown today
+      sessionStorage.setItem(todayKey, 'true');
+
+      let message = "You've hit your calorie goal for today. Nice work!";
+      try {
+        const res = await fetch(API + '/suggest', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const data = await res.json();
+        if (data.suggestion) message = data.suggestion;
+      } catch (err) {
+        // fall back to the default message above
+      }
+      showGoalPopup(message);
+    }
+
+    function showGoalPopup(message) {
+      document.getElementById('goal-popup-text').textContent = message;
+      document.getElementById('goal-popup-overlay').classList.add('active');
+    }
+
+    function closeGoalPopup() {
+      document.getElementById('goal-popup-overlay').classList.remove('active');
+    }
+
     async function getSuggestion() {
       const btn = document.getElementById('suggest-btn');
       const textEl = document.getElementById('suggest-text');
@@ -714,6 +743,7 @@ function updatePortion(mealType) {
         bar.style.width = pct + '%';
         bar.style.background = pct > 90 ? '#FF6B5E' : '#2DC653';
 
+        checkGoalReached(totalCal, calorieTarget);
         updateMacroBars();
       } catch (err) {
         console.log('Could not load meals:', err);
@@ -769,6 +799,15 @@ function updatePortion(mealType) {
       }
     }
   </script>
+
+  <div class="goal-popup-overlay" id="goal-popup-overlay">
+    <div class="goal-popup">
+      <div class="goal-popup-icon">🎯</div>
+      <div class="goal-popup-title">Daily Goal Reached!</div>
+      <p class="goal-popup-text" id="goal-popup-text"></p>
+      <button class="btn-green" onclick="closeGoalPopup()">Got it</button>
+    </div>
+  </div>
 
   <script src="app.js" defer></script>
 </body>
