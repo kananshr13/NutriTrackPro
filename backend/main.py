@@ -71,7 +71,12 @@ def send_verification_email(to_email: str, username: str, token: str):
 limiter = Limiter(key_func=get_remote_address, default_limits=["200/minute"])
 
 app = FastAPI(title="NutriTrackPro API")
-
+@app.get("/health")
+def health_check():
+    return {
+        "status": "healthy",
+        "service": "NutriTrackPro API"
+    }
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
