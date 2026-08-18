@@ -3,7 +3,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 from database import Base, engine, get_db
 import models
@@ -120,11 +120,10 @@ class ProfileUpdate(BaseModel):
 class MealCreate(BaseModel):
     meal_type: str
     food_name: str
-    calories: float
-    protein: float
-    carbs: float
-    fats: float
-
+    calories: float = Field(..., ge=0)
+    protein: float = Field(..., ge=0)
+    carbs: float = Field(..., ge=0)
+    fats: float = Field(..., ge=0)
 
 class PasswordResetRequest(BaseModel):
     email: str
