@@ -87,19 +87,22 @@ A full-stack AI-powered nutrition tracking web application that helps users moni
 
 ## API Endpoints
  
-| Method   | Endpoint            | Description                                                                                                |
-|----------|---------------------|------------------------------------------------------------------------------------------------------------|
-| POST     | `/signup`           | Register new user, sends a verification email                                                              |
-| GET      | `/verify_email`     | Verifies a user's email from the emailed link                                                              |
-| POST     | `/login`            | User login, returns JWT (blocked until email is verified)                                                  |
-| GET/POST | `/profile`          | Get or update user profile, including goal                                                                 |
-| POST     | `/predict`          | Food image classification                                                                                  |
-| GET      | `/nutrition_search` | Search nutrition by food name                                                                              |
-| POST     | `/log_meal`         | Log a meal entry (flags high-calorie meals by type-specific range)                                         |
-| GET      | `/today_meals`      | Get today's meal logs                                                                                      |
-| GET      | `/weekly_summary`   | Get 7-day nutrition summary                                                                                |
-| GET      | `/suggest`          | AI-generated meal suggestion or goal-reached message, tailored to the user's goal and today's logged meals |
-| DELETE   | `/delete_meal/{id}` | Delete a meal entry                                                                                        |
+| Method   | Endpoint                | Description                                                                                                |
+|----------|-------------------------|------------------------------------------------------------------------------------------------------------|
+| POST     | `/signup`               | Register new user, sends a verification email (rate limited: 5/hour)                                       |
+| GET      | `/verify_email`         | Verifies a user's email from the emailed link                                                              |
+| POST     | `/login`                | User login, returns JWT (blocked until email is verified; rate limited: 10/min)                            |
+| POST     | `/request_password_reset` | Request password reset email (rate limited: 3/hour, no email enumeration)                                |
+| POST     | `/reset_password`       | Reset password using token from email                                                                      |
+| GET/POST | `/profile`              | Get or update user profile, including goal                                                                 |
+| DELETE   | `/delete_account`       | Delete account and all associated data (GDPR right to erasure)                                             |
+| POST     | `/predict`              | Food image classification (sent to Roboflow)                                                               |
+| GET      | `/nutrition_search`     | Search nutrition by food name (USDA proxy, hides API key)                                                  |
+| POST     | `/log_meal`             | Log a meal entry (flags high-calorie meals by type-specific range)                                         |
+| GET      | `/today_meals`          | Get today's meal logs                                                                                      |
+| GET      | `/weekly_summary`       | Get 7-day nutrition summary                                                                                |
+| GET      | `/suggest`              | AI-generated meal suggestion (anonymized data sent to Groq/Llama 3.1)                                      |
+| DELETE   | `/delete_meal/{id}`     | Delete a meal entry                                                                                        |
  
 ---
 
@@ -144,6 +147,24 @@ uvicorn main:app --reload
 | `BACKEND_URL`         | The deployed backend's public URL, used to build the verification link (e.g. `https://nutritrackpro-api.onrender.com`) |
  
 > **Note on hosting SMTP:** email verification is intentionally built on SendGrid's HTTP API rather than raw SMTP, since Render (and most free-tier PaaS providers) block outbound SMTP ports 25/465/587 at the network level. An HTTP-based provider avoids this entirely.
+
+---
+
+## Privacy & Data Handling
+
+NutriTrackPro processes user data with the following practices:
+
+- **Server-side secrets**: All API keys (USDA, Roboflow, Groq, SendGrid, HuggingFace) live in environment variables, never in the frontend or git history.
+- **JWT secrets** are required via `SECRET_KEY` env var — the app refuses to start without one.
+- **Third-party subprocessors**: When you use AI features, your data is shared with:
+  - **Roboflow** — food images you upload for classification
+  - **Groq (Llama 3.1)** — anonymized meal-category data (no names/usernames) for suggestions
+  - **USDA FoodData Central** — food search queries
+  - **SendGrid** — your email address for verification/reset emails
+- **Security controls**: Rate limiting on auth endpoints, security headers (X-Frame-Options, CSP-friendly headers), and CORS restricted to the official frontend origin.
+- **Data rights**: Users can delete their account and all associated data via `DELETE /delete_account`. Password resets available via email.
+
+See `backend/.env.example` for required variables.
  
 ---
 

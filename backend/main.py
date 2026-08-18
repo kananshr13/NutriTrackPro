@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, Depends, HTTPException
+from fastapi import FastAPI, UploadFile, File, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
@@ -8,10 +8,13 @@ from typing import Optional
 from database import Base, engine, get_db
 import models
 import auth
-import os 
+import os
 import re
 import secrets
 import requests as http_requests
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
@@ -64,15 +67,32 @@ def send_verification_email(to_email: str, username: str, token: str):
         print(f"[email] SendGrid send failed ({res.status_code}): {res.text}")
         raise Exception(f"SendGrid error {res.status_code}: {res.text}")
 
+# Rate limiter
+limiter = Limiter(key_func=get_remote_address, default_limits=["200/minute"])
+
 app = FastAPI(title="NutriTrackPro API")
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://nutri-track-pro-six.vercel.app", "http://localhost:3000", "http://localhost:5500"],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type"],
 )
+
+# Security headers middleware
+@app.middleware("http")
+async def security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "no-referrer"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Permissions-Policy"] = "geolocation=(), camera=(), microphone=()"
+    return response
 
 Base.metadata.create_all(bind=engine)
 
@@ -99,6 +119,19 @@ class MealCreate(BaseModel):
     protein: float
     carbs: float
     fats: float
+
+
+class PasswordResetRequest(BaseModel):
+    email: str
+
+
+class PasswordReset(BaseModel):
+    token: str
+    new_password: str
+
+
+class DeleteAccount(BaseModel):
+    password: str
 
 
 # CALORIE CALCULATOR using Mifflin-St Jeor BMR + TDEE
@@ -150,7 +183,8 @@ def home():
     return {"message": "NutriTrackPro API is running!"}
 
 @app.post("/signup")
-def signup(user: UserCreate, db: Session = Depends(get_db)):
+@limiter.limit("5/hour")
+def signup(request: Request, user: UserCreate, db: Session = Depends(get_db)):
     if not EMAIL_RE.match(user.email):
         raise HTTPException(status_code=400, detail="Please enter a valid email address")
 
@@ -208,7 +242,9 @@ def verify_email(token: str, db: Session = Depends(get_db)):
     )
 
 @app.post("/login")
+@limiter.limit("10/minute")
 def login(
+    request: Request,
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)
 ):
@@ -225,7 +261,78 @@ def login(
     return {"access_token": token, "token_type": "bearer"}
 
 
-# PROFILE ROUTES
+# PASSWORD RESET ROUTES
+@app.post("/request_password_reset")
+@limiter.limit("3/hour")
+def request_password_reset(request: Request, data: PasswordResetRequest, db: Session = Depends(get_db)):
+    """Send a password-reset email. Generic response to avoid email enumeration."""
+    user = db.query(models.User).filter(models.User.email == data.email).first()
+    if user:
+        reset_token = secrets.token_urlsafe(32)
+        user.verification_token = reset_token
+        db.commit()
+        try:
+            send_reset_email(user.email, user.username, reset_token)
+        except Exception as e:
+            print(f"[email] Failed to send reset email: {e}")
+    return {"message": "If that email is registered, a reset link has been sent."}
+
+
+@app.post("/reset_password")
+def reset_password(data: PasswordReset, db: Session = Depends(get_db)):
+    """Reset password using the token from the email. Clears token on use."""
+    user = db.query(models.User).filter(models.User.verification_token == data.token).first()
+    if not user:
+        raise HTTPException(status_code=400, detail="Invalid or expired reset link.")
+    if len(data.new_password) < 6:
+        raise HTTPException(status_code=400, detail="Password must be at least 6 characters.")
+    user.hashed_password = auth.hash_password(data.new_password)
+    user.verification_token = None
+    db.commit()
+    return {"message": "Password updated. You can now log in with your new password."}
+
+
+def send_reset_email(to_email: str, username: str, token: str):
+    api_key = os.getenv("SENDGRID_API_KEY")
+    from_email = os.getenv("SENDGRID_FROM_EMAIL")
+    backend_url = os.getenv("BACKEND_URL", "http://localhost:8000")
+    reset_link = f"{backend_url}/reset_password?token={token}"
+    if not all([api_key, from_email]):
+        print(f"[email] SendGrid not configured — Reset link: {reset_link}")
+        return
+    res = http_requests.post(
+        "https://api.sendgrid.com/v3/mail/send",
+        headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+        json={
+            "personalizations": [{"to": [{"email": to_email}]}],
+            "from": {"email": from_email, "name": "NutriTrackPro"},
+            "subject": "Reset your NutriTrackPro password",
+            "content": [{"type": "text/plain", "value": f"Hi {username},\n\nReset your password here: {reset_link}\n\nIf you didn't request this, ignore the email."}],
+        },
+        timeout=10,
+    )
+    if res.status_code >= 300:
+        raise Exception(f"SendGrid error {res.status_code}: {res.text}")
+
+
+# ACCOUNT DELETION (GDPR right to erasure)
+@app.delete("/delete_account")
+def delete_account(
+    data: DeleteAccount,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    """Delete the current user and all their data (profile + meal logs)."""
+    if not auth.verify_password(data.password, current_user.hashed_password):
+        raise HTTPException(status_code=401, detail="Wrong password.")
+    db.query(models.MealLog).filter(models.MealLog.user_id == current_user.id).delete()
+    db.query(models.UserProfile).filter(models.UserProfile.user_id == current_user.id).delete()
+    db.delete(current_user)
+    db.commit()
+    return {"message": "Account and all associated data deleted."}
+
+
+
 @app.post("/profile")
 def save_profile(
     data: ProfileUpdate,
@@ -398,6 +505,10 @@ def suggest_healthier_choices(
         return {"suggestion": f"Your {names} ran higher than the typical range. {goal_hint}consider a lighter, protein-forward option next — like grilled chicken with vegetables or a lentil bowl."}
 
     try:
+        # PRIVACY: only meal CATEGORY + calorie counts are sent to Groq.
+        # No usernames, account IDs, or other PII are included in the prompt.
+        meal_summary = "; ".join(f"{m.meal_type}: {round(m.calories)} kcal" for m in meals)
+        flagged_summary = "; ".join(f"{m.meal_type} (~{round(m.calories)} kcal)" for m in flagged)
         res = http_requests.post(
             "https://api.groq.com/openai/v1/chat/completions",
             headers={"Authorization": f"Bearer {api_key}"},
@@ -409,18 +520,18 @@ def suggest_healthier_choices(
                         "content": (
                             "You are a supportive nutrition assistant inside a food-tracking app. "
                             "The user has one or more meals today that ran higher than the typical "
-                            "calorie range for that meal type. Reference the specific meal(s) by name "
-                            "and give 2-3 short, specific, encouraging suggestions for what to swap or "
-                            "add next, tailored to the user's stated goal. Keep it under 70 words, no "
-                            "medical claims, no specific calorie targets, just practical and kind."
+                            "calorie range for that meal type. Give 2-3 short, specific, encouraging "
+                            "suggestions for what to swap or add next, tailored to the user's stated "
+                            "goal. Keep it under 70 words, no medical claims, no specific calorie "
+                            "targets, just practical and kind. Do not reveal you were given raw numbers."
                         )
                     },
                     {
                         "role": "user",
                         "content": (
                             f"Goal: {goal}. Daily calorie target: {calorie_target}. "
-                            f"Meals so far today ({round(total_calories)} kcal total): {meal_list}. "
-                            f"Meals that ran higher than typical for their type: {flagged_list}."
+                            f"Meals so far today (total {round(total_calories)} kcal): {meal_summary}. "
+                            f"Meal categories that ran higher than typical: {flagged_summary}."
                         )
                     }
                 ],

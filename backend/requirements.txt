@@ -36,6 +36,7 @@ python-dotenv==1.2.2
 python-jose==3.5.0
 python-multipart==0.0.32
 PyYAML==6.0.3
+slowapi==0.1.9
 regex==2026.5.9
 requests==2.34.2
 rich==15.0.0
